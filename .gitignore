@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+.bun/
+
+# Build outputs
+dist/
+dist-zip/
+build/
+site-dist/
+.clasp.json
+.clasprc.json
+*.zip
+
+# Environment & Temp
+.env
+.env.*
+.env.local
+.env.*.local
+*.log
+.wrangler/
+.dev.vars*
+!*.example
+feedback/worker/src/*.generated.json
+feedback/worker/worker-configuration.d.ts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+bun.lockb
+.DS_Store
+Thumbs.db
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+.antigravity/
+
+# Local acceptance evidence and browser output
+playwright-report/
+test-results/
+*.webm
+*.wav
+*.pcm
+*.opus
