@@ -46,7 +46,7 @@ const standalone = typeof __USERSCRIPT__ !== 'undefined' && __USERSCRIPT__;
   let commandBindings: Record<string, string> = {};
   let playerLayout: PlayerLayout | null = null;
   const readyToast = new ReadyToast();
-  if (standalone) { try { settingsCache = { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(STORAGE_KEYS.SETTINGS) || '{}') }; } catch { settingsCache = { ...DEFAULT_SETTINGS }; } }
+  if (standalone) { try { settingsCache = normalizedSettings(JSON.parse(localStorage.getItem(STORAGE_KEYS.SETTINGS) || '{}')); } catch { settingsCache = { ...DEFAULT_SETTINGS }; } }
   let sessionSpeed: number | null = null;
   let sessionVolume: number | null = null;
   const mediaListenersInstalled = new WeakSet<HTMLMediaElement>();
@@ -144,17 +144,17 @@ const standalone = typeof __USERSCRIPT__ !== 'undefined' && __USERSCRIPT__;
     if (standalone) {
       try {
         const saved = parseFloat(localStorage.getItem(CONFIG.speedStorage) || "");
-        if (Number.isFinite(saved) && saved >= 0.25 && saved <= 4) return saved;
+        if (Number.isFinite(saved) && saved >= 0.5 && saved <= 3) return saved;
       } catch (_) {}
     }
 
     const configuredSpeed = Number(settingsCache?.defaultSpeed);
-    if (Number.isFinite(configuredSpeed) && configuredSpeed >= 0.25 && configuredSpeed <= 4) {
+    if (Number.isFinite(configuredSpeed) && configuredSpeed >= 0.5 && configuredSpeed <= 3) {
       return configuredSpeed;
     }
 
     const n = parseFloat(localStorage.getItem(CONFIG.speedStorage) || "");
-    return Number.isFinite(n) && n >= 0.25 && n <= 4 ? n : CONFIG.defaultSpeed;
+    return Number.isFinite(n) && n >= 0.5 && n <= 3 ? n : CONFIG.defaultSpeed;
   }
 
   function getSavedVolume(): number {
@@ -181,7 +181,7 @@ const standalone = typeof __USERSCRIPT__ !== 'undefined' && __USERSCRIPT__;
 
     try {
       const raw = localStorage.getItem(CONFIG.settingsStorage);
-      return raw ? JSON.parse(raw) : {};
+      return normalizedSettings(raw ? JSON.parse(raw) : {});
     } catch (_) {
       return {};
     }
