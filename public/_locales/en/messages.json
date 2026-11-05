@@ -1,0 +1,56 @@
+{
+  "command_play_pause": {
+    "message": "Play / Pause"
+  },
+  "command_seek_back": {
+    "message": "Seek backward"
+  },
+  "command_seek_forward": {
+    "message": "Seek forward"
+  },
+  "command_speed_decrease": {
+    "message": "Decrease Speed"
+  },
+  "command_speed_increase": {
+    "message": "Increase Speed"
+  },
+  "command_speed_reset": {
+    "message": "Reset speed to 1×"
+  },
+  "command_volume_increase": {
+    "message": "Increase volume"
+  },
+  "command_volume_decrease": {
+    "message": "Decrease volume"
+  },
+  "command_toggle_mute": {
+    "message": "Mute / unmute"
+  },
+  "command_download_audio": {
+    "message": "Download audio"
+  },
+  "command_toggle_collapse": {
+    "message": "Collapse Player / Expand Claude Audio Controls"
+  },
+  "command_reset_layout": {
+    "message": "Reset layout"
+  },
+  "command_open_help": {
+    "message": "Keyboard shortcuts & gestures"
+  },
+  "command_open_settings": {
+    "message": "Open Dashboard & Settings"
+  },
+  "extensionName": {
+    "message": "Claude Audio Controls & Read Aloud"
+  },
+  "extensionDescription": {
+    "message": "Claude Read Aloud controls: pause, seek, speed, volume, audio downloads, shortcuts."
+  },
+  "extensionActionTitle": {
+    "message": "Claude Audio Controls"
+  },
+  "visibilityCommand": {
+    "message": "Show / hide floating controls"
+  }
+}

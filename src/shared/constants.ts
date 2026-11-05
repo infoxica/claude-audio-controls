@@ -1,0 +1,129 @@
+import { ExtensionSettings, ShortcutItem } from "./types";
+
+export const EXTENSION_VERSION = "0.1.0";
+
+export const SPEED_PRESETS = [0.5, 0.75, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3];
+
+export const STORAGE_KEYS = {
+  SPEED: "claude-ra-v4-speed",
+  VOLUME: "claude-ra-v4-volume",
+  SETTINGS: "claude-ra-settings",
+} as const;
+
+export const DEFAULT_SETTINGS: ExtensionSettings = {
+  notifyDownloadReady: true,
+  floatingUiHidden: false,
+  floatingUiHideMode: "idle-only",
+  defaultSpeed: 1,
+  defaultVolume: 1,
+  tapSeekSeconds: 10,
+  enableShortcuts: true,
+  theme: "system",
+  smoothScrubbing: true,
+  autoDownloadFormat: "auto",
+  language: "auto",
+};
+
+// Keep each preference under its own sync key so independent updates from the
+// popup and options page cannot overwrite one another.
+export const SETTING_STORAGE_KEYS: Record<keyof ExtensionSettings, string> = {
+  notifyDownloadReady: 'claude-ra-settings.notifyDownloadReady',
+  floatingUiHidden: "claude-ra-settings.floatingUiHidden",
+  floatingUiHideMode: "claude-ra-settings.floatingUiHideMode",
+  defaultSpeed: "claude-ra-settings.defaultSpeed",
+  defaultVolume: "claude-ra-settings.defaultVolume",
+  tapSeekSeconds: "claude-ra-settings.tapSeekSeconds",
+  enableShortcuts: "claude-ra-settings.enableShortcuts",
+  theme: "claude-ra-settings.theme",
+  smoothScrubbing: "claude-ra-settings.smoothScrubbing",
+  autoDownloadFormat: "claude-ra-settings.autoDownloadFormat",
+  language: "claude-ra-settings.language",
+};
+
+export interface LanguageOption {
+  code: ExtensionSettings["language"];
+  label: string;
+  nativeName: string;
+  flag?: string;
+}
+
+export function orderLanguages(languages: LanguageOption[]): LanguageOption[] {
+  return [...languages].sort((a, b) => a.code === 'auto' ? -1 : b.code === 'auto' ? 1 : a.label.localeCompare(b.label, 'en'));
+}
+export const SUPPORTED_LANGUAGES: LanguageOption[] = orderLanguages([
+  ...additionalLanguages,
+  { code: "auto", label: "Auto Detect", nativeName: "Auto (Browser Default)" },
+  { code: 'pl', label: 'Polish', nativeName: 'Polski' },
+  { code: 'hu', label: 'Hungarian', nativeName: 'Magyar' },
+  { code: 'sv', label: 'Swedish', nativeName: 'Svenska' },
+  { code: 'cs', label: 'Czech', nativeName: 'Čeština' },
+  { code: 'uk', label: 'Ukrainian', nativeName: 'Українська' },
+  { code: 'ca', label: 'Catalan', nativeName: 'Català' },
+  { code: 'el', label: 'Greek', nativeName: 'Ελληνικά' },
+  { code: 'ro', label: 'Romanian', nativeName: 'Română' },
+  { code: 'nb', label: 'Norwegian Bokmål', nativeName: 'Norsk bokmål' },
+  { code: 'bn', label: 'Bengali', nativeName: 'বাংলা' },
+  { code: 'mr', label: 'Marathi', nativeName: 'मराठी' },
+  { code: 'te', label: 'Telugu', nativeName: 'తెలుగు' },
+  { code: 'ta', label: 'Tamil', nativeName: 'தமிழ்' },
+  { code: 'ar', label: 'Arabic', nativeName: 'العربية' },
+  { code: 'fa', label: 'Persian', nativeName: 'فارسی' },
+  { code: 'he', label: 'Hebrew', nativeName: 'עברית' },
+  { code: "en", label: "English", nativeName: "English" },
+  { code: "zh-CN", label: "Chinese (Simplified)", nativeName: "简体中文" },
+  { code: "zh-TW", label: "Chinese (Traditional)", nativeName: "繁體中文" },
+  { code: "vi", label: "Vietnamese", nativeName: "Tiếng Việt" },
+  { code: "th", label: "Thai", nativeName: "ไทย" },
+  { code: "es", label: "Spanish", nativeName: "Español" },
+  { code: "pt-BR", label: "Portuguese (Brazil)", nativeName: "Português (Brasil)" },
+  { code: "pt-PT", label: "Portuguese (Portugal)", nativeName: "Português (Portugal)" },
+  { code: "ru", label: "Russian", nativeName: "Русский" },
+  { code: "hi", label: "Hindi", nativeName: "हिन्दी" },
+  { code: "fr", label: "French", nativeName: "Français" },
+  { code: "de", label: "German", nativeName: "Deutsch" },
+  { code: "ja", label: "Japanese", nativeName: "日本語" },
+  { code: "ko", label: "Korean", nativeName: "한국어" },
+  { code: "id", label: "Indonesian", nativeName: "Bahasa Indonesia" },
+  { code: "it", label: "Italian", nativeName: "Italiano" },
+  { code: "tr", label: "Turkish", nativeName: "Türkçe" },
+
+]);
+
+export const SHORTCUTS: ShortcutItem[] = [
+  {
+    id: "play-pause",
+    action: "Play / Pause",
+    keys: ["Space / K"],
+    description: "Toggle playback, matching common web and desktop players (Alt+P remains supported)",
+    category: "playback",
+  },
+  {
+    id: "seek-back",
+    action: "Back 10 seconds",
+    keys: ["Alt", "←"],
+    description: "Jump backward 10s (Hold for smooth scrub)",
+    category: "navigation",
+  },
+  {
+    id: "seek-forward",
+    action: "Forward 10 seconds",
+    keys: ["Alt", "→"],
+    description: "Jump forward 10s (Hold for smooth scrub)",
+    category: "navigation",
+  },
+  {
+    id: "speed-decrease",
+    action: "Decrease Speed",
+    keys: ["Shift", "<"],
+    description: "Step down to previous speed preset",
+    category: "speed",
+  },
+  {
+    id: "speed-increase",
+    action: "Increase Speed",
+    keys: ["Shift", ">"],
+    description: "Step up to next speed preset",
+    category: "speed",
+  },
+];
+import { additionalLanguages } from './locale-registry';

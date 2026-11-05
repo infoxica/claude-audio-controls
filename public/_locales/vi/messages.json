@@ -1,0 +1,56 @@
+{
+  "command_play_pause": {
+    "message": "Phát / Tạm dừng"
+  },
+  "command_seek_back": {
+    "message": "Tua lùi"
+  },
+  "command_seek_forward": {
+    "message": "Tua tới"
+  },
+  "command_speed_decrease": {
+    "message": "Giảm tốc độ"
+  },
+  "command_speed_increase": {
+    "message": "Tăng tốc độ"
+  },
+  "command_speed_reset": {
+    "message": "Đặt lại tốc độ 1×"
+  },
+  "command_volume_increase": {
+    "message": "Tăng âm lượng"
+  },
+  "command_volume_decrease": {
+    "message": "Giảm âm lượng"
+  },
+  "command_toggle_mute": {
+    "message": "Tắt / bật tiếng"
+  },
+  "command_download_audio": {
+    "message": "Tải xuống âm thanh"
+  },
+  "command_toggle_collapse": {
+    "message": "Thu gọn trình phát / Mở rộng Claude Audio Controls"
+  },
+  "command_reset_layout": {
+    "message": "Đặt lại bố cục"
+  },
+  "command_open_help": {
+    "message": "Phím tắt & Cử chỉ"
+  },
+  "command_open_settings": {
+    "message": "Mở Cài đặt & Bảng điều khiển"
+  },
+  "extensionName": {
+    "message": "Claude Audio Controls & Read Aloud"
+  },
+  "extensionDescription": {
+    "message": "Điều khiển Đọc to của Claude: tạm dừng, tua, tốc độ, âm lượng, tải âm thanh và phím tắt."
+  },
+  "extensionActionTitle": {
+    "message": "Claude Audio Controls"
+  },
+  "visibilityCommand": {
+    "message": "Hiện / ẩn bộ điều khiển nổi"
+  }
+}

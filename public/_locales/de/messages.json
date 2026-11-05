@@ -1,0 +1,56 @@
+{
+  "command_play_pause": {
+    "message": "Wiedergabe / Pause"
+  },
+  "command_seek_back": {
+    "message": "Zurückspulen"
+  },
+  "command_seek_forward": {
+    "message": "Vorspulen"
+  },
+  "command_speed_decrease": {
+    "message": "Geschwindigkeit senken"
+  },
+  "command_speed_increase": {
+    "message": "Geschwindigkeit erhöhen"
+  },
+  "command_speed_reset": {
+    "message": "Tempo auf 1× zurücksetzen"
+  },
+  "command_volume_increase": {
+    "message": "Lauter"
+  },
+  "command_volume_decrease": {
+    "message": "Leiser"
+  },
+  "command_toggle_mute": {
+    "message": "Stumm / Ton an"
+  },
+  "command_download_audio": {
+    "message": "Audio herunterladen"
+  },
+  "command_toggle_collapse": {
+    "message": "Player einklappen / Claude Audio Controls ausklappen"
+  },
+  "command_reset_layout": {
+    "message": "Anordnung zurücksetzen"
+  },
+  "command_open_help": {
+    "message": "Tastenkürzel und Gesten"
+  },
+  "command_open_settings": {
+    "message": "Übersicht und Einstellungen öffnen"
+  },
+  "extensionName": {
+    "message": "Claude Audio Controls — Vorlesen"
+  },
+  "extensionDescription": {
+    "message": "Claude Vorlesen steuern: Pause, Spulen, Tempo, Lautstärke, Audio-Downloads, Tastenkürzel."
+  },
+  "extensionActionTitle": {
+    "message": "Claude Audio Controls"
+  },
+  "visibilityCommand": {
+    "message": "Schwebende Steuerelemente ein-/ausblenden"
+  }
+}

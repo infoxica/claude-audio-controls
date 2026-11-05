@@ -1,0 +1,56 @@
+{
+  "command_play_pause": {
+    "message": "Riproduci / Pausa"
+  },
+  "command_seek_back": {
+    "message": "Indietro"
+  },
+  "command_seek_forward": {
+    "message": "Avanti"
+  },
+  "command_speed_decrease": {
+    "message": "Riduci velocità"
+  },
+  "command_speed_increase": {
+    "message": "Aumenta velocità"
+  },
+  "command_speed_reset": {
+    "message": "Ripristina velocità a 1×"
+  },
+  "command_volume_increase": {
+    "message": "Aumenta volume"
+  },
+  "command_volume_decrease": {
+    "message": "Riduci volume"
+  },
+  "command_toggle_mute": {
+    "message": "Disattiva / attiva audio"
+  },
+  "command_download_audio": {
+    "message": "Scarica audio"
+  },
+  "command_toggle_collapse": {
+    "message": "Riduci lettore / Espandi Claude Audio Controls"
+  },
+  "command_reset_layout": {
+    "message": "Ripristina disposizione"
+  },
+  "command_open_help": {
+    "message": "Scorciatoie e gesti"
+  },
+  "command_open_settings": {
+    "message": "Apri pannello e impostazioni"
+  },
+  "extensionName": {
+    "message": "Claude Audio Controls — Leggi ad alta voce"
+  },
+  "extensionDescription": {
+    "message": "Controlli di lettura ad alta voce Claude: pausa, avanzamento, velocità, volume, download audio e scorciatoie."
+  },
+  "extensionActionTitle": {
+    "message": "Claude Audio Controls"
+  },
+  "visibilityCommand": {
+    "message": "Mostra / nascondi i controlli mobili"
+  }
+}
