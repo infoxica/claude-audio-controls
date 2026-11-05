@@ -36,6 +36,8 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Live voice conversations and m
 
 ## Validate and package
 
+Python 3 is also required for ZIP packaging, distribution auditing and the static-site HTTP checks.
+
 ```sh
 bun run typecheck
 bun run test

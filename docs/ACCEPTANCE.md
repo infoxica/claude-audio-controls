@@ -10,6 +10,7 @@ This file records evidence, not a production approval. `config/acceptance.json` 
 - All 67 runtime locale changes, RTL, narrow portrait/landscape and keyboard-sized viewport; semantic theme update.
 - Browser fixtures also verify reply replacement, stale frame rejection, navigation cleanup and unknown-format fallback. These do not replace live-device acceptance.
 - Automated Chromium suite: 12 tests across audio, built extension/userscript, settings and website. ZIP verification compares every archived byte with the built distribution and checks scope, versions and dependency notices.
+- Completed PCM and Opus playback can be disposed repeatedly without finalized-output warnings; the regression was reproduced before the fix.
 - Website: all 335 localized pages build; three HTTP/link checks pass. Browser checks confirm consent, withdrawal, disabled staging analytics, hidden unavailable store links, localized navigation and narrow RTL layout.
 - Staging health and indexing checks pass at https://claude-audio-controls-staging.anand224patel.workers.dev/.
 - Live Edge staging feedback form completed its Turnstile flow and displayed a saved confirmation. Remote D1 verification found exactly one fictional staging test record and zero production records.

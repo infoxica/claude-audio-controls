@@ -10,6 +10,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 for (const format of ['pcm_16000', 'opus_48000_32']) test(`${format}: streaming, early pause, seek, speed, complete download and independent decode`, async ({ page }) => {
+  const warnings = [];
+  page.on('console', message => { if (message.type() === 'warning') warnings.push(message.text()); });
   await page.evaluate(async format => {
     window.player = new StreamPlayer('fixture', format);
     const pcm = new Int16Array(16000 * 3);
@@ -39,11 +41,13 @@ for (const format of ['pcm_16000', 'opus_48000_32']) test(`${format}: streaming,
     const state = player.state, blob = await player.download();
     const decoder = new AudioContext(); const decoded = await decoder.decodeAudioData(await blob.arrayBuffer());
     const result = { state, type: blob.type, duration: decoded.duration, peak: Math.max(...decoded.getChannelData(0).subarray(0, 16000)) };
-    await decoder.close(); player.dispose(); return result;
+    await decoder.close(); player.dispose(); player.dispose(); return result;
   });
   expect(result.type).toBe(format === 'pcm_16000' ? 'audio/wav' : 'audio/webm');
   expect(result.duration).toBeGreaterThanOrEqual(2.99); expect(result.duration).toBeLessThan(3.08);
   expect(result.peak).toBeGreaterThan(.05); expect(result.state.rate).toBe(1.5); expect(result.state.volume).toBe(.4);
+  expect(await page.evaluate(() => ({ status: player.state.status, src: player.media.getAttribute('src') }))).toEqual({ status: 'idle', src: null });
+  expect(warnings).not.toContain('Output has already been finalized.');
 });
 
 test('malformed frames and memory limits stop ownership', async ({ page }) => {

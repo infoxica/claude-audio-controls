@@ -197,7 +197,9 @@ export class StreamPlayer implements PlaybackAdapter {
     this.closed = true; this.acceptFrames = false; this.wantsPlay = false;
     this.abort.abort(); this.media.pause(); this.media.removeAttribute('src'); this.media.load();
     if (this.url) URL.revokeObjectURL(this.url);
-    void this.output?.cancel().catch(() => {});
+    // Finalization already releases the encoder and writer. Cancel only unfinished output.
+    if (this.output && this.output.state !== 'finalized') void this.output.cancel().catch(() => {});
+    this.output = null;
     this.sourceBuffer = null; this.track = null; this.parts = []; this.downloadWork = null; this.retained = 0;
     this.emit(); this.listeners.clear();
   }
