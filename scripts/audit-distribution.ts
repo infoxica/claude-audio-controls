@@ -8,7 +8,7 @@ checkVersions();
 const root = resolve('.');
 const candidates = [...new Set(execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], {encoding:'utf8'}).split('\0').filter(Boolean))].sort();
 const allowedRoots = new Set(['.github', 'assets', 'config', 'docs', 'feedback', 'public', 'scripts', 'site', 'src', 'tests', 'userscript']);
-const allowedRootFiles = new Set(['.gitignore','LICENSE','README.md','CHANGELOG.md','CONTRIBUTING.md','PRIVACY.md','THIRD_PARTY_NOTICES.md','bun.lock','package.json','playwright.config.mjs','tsconfig.json','vite.config.ts']);
+const allowedRootFiles = new Set(['.gitattributes','.gitignore','LICENSE','README.md','CHANGELOG.md','CONTRIBUTING.md','PRIVACY.md','THIRD_PARTY_NOTICES.md','bun.lock','package.json','playwright.config.mjs','tsconfig.json','vite.config.ts']);
 const binary = new Set(['.png']);
 const findings: string[] = [];
 const inventory: {path:string; bytes:number; sha256:string}[] = [];
