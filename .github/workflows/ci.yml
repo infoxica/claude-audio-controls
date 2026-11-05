@@ -1,0 +1,29 @@
+name: Validate
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.3
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - run: bun run test
+      - run: bun run typecheck:feedback
+      - run: bunx playwright install --with-deps chromium
+      - run: bun run build:site
+      - run: bun run test:browser
+      - run: bun run test:site-http
+      - run: bun run package
+      - run: bun scripts/audit-distribution.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: claude-development-build
+          path: |
+            dist-zip/*.zip
+            userscript/*.user.js
+            site-dist/

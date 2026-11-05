@@ -1,0 +1,56 @@
+{
+  "command_play_pause": {
+    "message": "재생 / 일시 정지"
+  },
+  "command_seek_back": {
+    "message": "뒤로 탐색"
+  },
+  "command_seek_forward": {
+    "message": "앞으로 탐색"
+  },
+  "command_speed_decrease": {
+    "message": "속도 줄이기"
+  },
+  "command_speed_increase": {
+    "message": "속도 높이기"
+  },
+  "command_speed_reset": {
+    "message": "속도를 1×로 초기화"
+  },
+  "command_volume_increase": {
+    "message": "음량 높이기"
+  },
+  "command_volume_decrease": {
+    "message": "음량 낮추기"
+  },
+  "command_toggle_mute": {
+    "message": "음소거 전환"
+  },
+  "command_download_audio": {
+    "message": "오디오 다운로드"
+  },
+  "command_toggle_collapse": {
+    "message": "플레이어 접기 / Claude Audio Controls 펼치기"
+  },
+  "command_reset_layout": {
+    "message": "배치 초기화"
+  },
+  "command_open_help": {
+    "message": "단축키 및 동작"
+  },
+  "command_open_settings": {
+    "message": "대시보드 및 설정 열기"
+  },
+  "extensionName": {
+    "message": "Claude Audio Controls — 읽어주기"
+  },
+  "extensionDescription": {
+    "message": "Claude 소리 내어 읽기 제어: 일시 정지, 탐색, 속도, 음량, 오디오 다운로드, 단축키."
+  },
+  "extensionActionTitle": {
+    "message": "Claude Audio Controls"
+  },
+  "visibilityCommand": {
+    "message": "플로팅 컨트롤 표시 / 숨기기"
+  }
+}

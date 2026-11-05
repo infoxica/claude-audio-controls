@@ -1,0 +1,22 @@
+name: Prepare approved release
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.3
+      - run: bun install --frozen-lockfile
+      - run: bun run package && bun run release:check && bun run test
+      - run: bun scripts/audit-distribution.ts
+      - name: Create draft for final store review
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(bun -p "require('./package.json').version")
+          gh release create "v$VERSION" --draft --title "Claude Audio Controls $VERSION" --notes-file CHANGELOG.md dist-zip/*.zip userscript/*.user.js

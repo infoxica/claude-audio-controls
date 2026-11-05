@@ -1,0 +1,15 @@
+{
+  "version": "0.1.0",
+  "nativePcm": false,
+  "nativeOpus": true,
+  "singleAudiblePlayer": false,
+  "downloadsDecoded": true,
+  "chromeWindows": false,
+  "edgeWindows": false,
+  "chromeMacOS": false,
+  "edgeMacOS": false,
+  "edgeAndroidLive": false,
+  "userscriptLive": false,
+  "websiteStaging": true,
+  "localizationReviewed": false
+}
