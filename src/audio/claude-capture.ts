@@ -1,3 +1,4 @@
+import { isClaudeChatRoute } from '../shared/claude-route';
 import { nativeFormat, isNativeSpeechSocket } from './formats';
 import { StreamPlayer, supported } from './stream-player';
 import { emptyState, type PlaybackState } from './types';
@@ -42,13 +43,14 @@ export class ClaudePlayback {
   isOwned(media: HTMLMediaElement): boolean { return media === this.media; }
   seek(seconds: number): void { this.player?.seek(seconds); }
   toggle(): void { if (this.paused) void this.player?.play().catch(() => this.failed('Press play to allow audio in this browser.')); else this.player?.pause(); }
-  blob(): Promise<Blob> { return this.player ? this.player.download() : Promise.reject(new Error('No completed reply')); }
+  get format() { return this.player?.format; }
+  blob(format: 'native' | 'wav' = 'native'): Promise<Blob> { return this.player ? this.player.download(format) : Promise.reject(new Error('No completed reply')); }
 
   install(): void {
     if (window.top !== window || location.origin !== 'https://claude.ai') return;
     for (const format of ['pcm_16000', 'opus_48000_32'] as const) void supported(format).then(ok => { this.capabilities[format] = ok; });
     window.addEventListener('click', event => {
-      if (this.nativeClick || !(event.target instanceof Element)) return;
+      if (this.nativeClick || !isClaudeChatRoute() || !(event.target instanceof Element)) return;
       const button = event.target.closest<HTMLButtonElement>(ACTION);
       if (!button) return;
       this.dispose();
@@ -61,7 +63,7 @@ export class ClaudePlayback {
         const socket: WebSocket = Reflect.construct(target, args, newTarget);
         const format = nativeFormat(args[0]);
         const intent = self.intent;
-        if (!isNativeSpeechSocket(args[0]) || !intent || intent.path !== location.pathname || !intent.button.isConnected || performance.now() - intent.time > 15000) return socket;
+        if (!isClaudeChatRoute() || !isNativeSpeechSocket(args[0]) || !intent || intent.path !== location.pathname || !intent.button.isConnected || performance.now() - intent.time > 15000) return socket;
         self.intent = null;
         if (!format || !self.capabilities[format]) { self.failed(COMPATIBILITY); return socket; }
         self.capture(socket, format, intent);
@@ -157,7 +159,9 @@ export class ClaudePlayback {
   }
   private fallback(): void { this.dispose(); this.failed(COMPATIBILITY); }
   dispose(): void {
+    const session = this.generation;
     this.generation++;
+    this.intent = null;
     this.socketAbort?.abort(); this.socketAbort = null;
     if (this.watchdog) clearInterval(this.watchdog); this.watchdog = null;
     this.unwatch?.(); this.unwatch = null;
@@ -165,6 +169,7 @@ export class ClaudePlayback {
     if (this.native && this.taken) this.native.hidden = this.originalHidden;
     this.proxy?.remove(); this.proxy = null; this.native = null;
     this.taken = this.taking = this.ready = false;
+    this.activity({ session, event: 'dispose', position: 0, duration: 0, rate: 1, advancing: false, now: performance.now() });
     this.retained(false); this.changed(null);
   }
 }

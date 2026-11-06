@@ -14,7 +14,7 @@ for (const format of ['pcm_16000', 'opus_48000_32']) test(`${format}: streaming,
   page.on('console', message => { if (message.type() === 'warning') warnings.push(message.text()); });
   await page.evaluate(async format => {
     window.player = new StreamPlayer('fixture', format);
-    const pcm = new Int16Array(16000 * 3);
+    const pcm = new Int16Array(16000 * 12);
     for (let i = 0; i < pcm.length; i++) pcm[i] = Math.sin(i * Math.PI * 2 * 440 / 16000) * 4000;
     window.frames = [];
     if (format === 'pcm_16000') {
@@ -40,11 +40,13 @@ for (const format of ['pcm_16000', 'opus_48000_32']) test(`${format}: streaming,
   const result = await page.evaluate(async () => {
     const state = player.state, blob = await player.download();
     const decoder = new AudioContext(); const decoded = await decoder.decodeAudioData(await blob.arrayBuffer());
-    const result = { state, type: blob.type, duration: decoded.duration, peak: Math.max(...decoded.getChannelData(0).subarray(0, 16000)) };
+    const compatible = await player.download('wav'); const compatibleAudio = await decoder.decodeAudioData(await compatible.arrayBuffer());
+    const result = { compatibleType: compatible.type, compatibleDuration: compatibleAudio.duration, state, type: blob.type, duration: decoded.duration, peak: Math.max(...decoded.getChannelData(0).subarray(0, 16000)) };
     await decoder.close(); player.dispose(); player.dispose(); return result;
   });
+  expect(result.compatibleType).toBe('audio/wav'); expect(result.compatibleDuration).toBeCloseTo(result.duration, 1);
   expect(result.type).toBe(format === 'pcm_16000' ? 'audio/wav' : 'audio/webm');
-  expect(result.duration).toBeGreaterThanOrEqual(2.99); expect(result.duration).toBeLessThan(3.08);
+  expect(result.duration).toBeGreaterThanOrEqual(11.99); expect(result.duration).toBeLessThan(12.08);
   expect(result.peak).toBeGreaterThan(.05); expect(result.state.rate).toBe(1.5); expect(result.state.volume).toBe(.4);
   expect(await page.evaluate(() => ({ status: player.state.status, src: player.media.getAttribute('src') }))).toEqual({ status: 'idle', src: null });
   expect(warnings).not.toContain('Output has already been finalized.');
@@ -126,4 +128,31 @@ test('unknown native format leaves the original action usable with a compatibili
   await expect(page.getByTestId('action-bar-read-aloud')).toBeVisible();
   expect(await page.evaluate(()=>failure)).toContain('native Read aloud');
   expect(await page.locator('[data-claude-ra-action]').count()).toBe(0);
+});
+
+
+test('buffered start waits across delivery bursts and an early pause cancels autoplay', async ({page}) => {
+  await page.evaluate(() => { window.player=new StreamPlayer('bursts','pcm_16000'); player.enqueue(new ArrayBuffer(32000)); void player.play(); });
+  await expect.poll(()=>page.evaluate(()=>player.state.buffered.end)).toBeGreaterThan(.5);
+  expect(await page.evaluate(()=>player.media.paused)).toBe(true);
+  expect(await page.evaluate(()=>player.state.status)).toBe('buffering');
+  await page.evaluate(()=>{player.pause(); player.enqueue(new ArrayBuffer(128000));});
+  await expect.poll(()=>page.evaluate(()=>player.state.buffered.end)).toBeGreaterThan(4);
+  expect(await page.evaluate(()=>player.media.paused)).toBe(true);
+  await page.evaluate(()=>{void player.play();});
+  await expect.poll(()=>page.evaluate(()=>player.state.position)).toBeGreaterThan(.2);
+  await page.evaluate(()=>{player.pause();player.finish();player.dispose();});
+});
+
+
+test('underrun waits for a fresh buffer instead of restarting on every small delivery', async ({page}) => {
+  await page.evaluate(()=>{window.player=new StreamPlayer('underrun','pcm_16000');player.enqueue(new ArrayBuffer(128000));void player.play();});
+  await expect.poll(()=>page.evaluate(()=>player.state.position)).toBeGreaterThan(.1);
+  await expect.poll(()=>page.evaluate(()=>player.state.status),{timeout:10000}).toBe('buffering');
+  await page.evaluate(()=>player.enqueue(new ArrayBuffer(32000)));
+  await expect.poll(()=>page.evaluate(()=>player.state.buffered.end)).toBeGreaterThan(4.5);
+  expect(await page.evaluate(()=>player.media.paused)).toBe(true);
+  await page.evaluate(()=>player.enqueue(new ArrayBuffer(96000)));
+  await expect.poll(()=>page.evaluate(()=>player.state.status)).toBe('playing');
+  await page.evaluate(()=>player.dispose());
 });

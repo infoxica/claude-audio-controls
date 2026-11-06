@@ -4,7 +4,7 @@ Native Claude Read aloud, with pause, buffered seeking, playback speed, volume a
 
 **0.1.0 is a development preview.** Production publication is blocked by the live acceptance matrix in [docs/ACCEPTANCE.md](docs/ACCEPTANCE.md). This repository contains the browser extension, a generated Tampermonkey userscript, and the localized companion website. Store listings are not available yet.
 
-![Composer dock with a fictional conversation](assets/demo/composer-dock.png)
+![Claude Audio Controls running on Claude with demo content](assets/demo/native-player.jpg)
 
 ## Develop and install
 
@@ -28,6 +28,8 @@ Claude initiates speech generation with its own authentication, voice and pace s
 - Native Opus packets are packaged as streaming WebM. Native PCM is encoded locally to Opus for MediaSource playback.
 - Seeking is bounded by received audio; final duration and downloads are unavailable until successful completion.
 - Downloads are finalized WebM/Opus for native Opus and WAV for native PCM.
+- For Windows Media Player, open **Download** and choose **WAV** on Opus replies. The same menu also offers **WebM / Opus**. This decodes locally in bounded batches; native WebM remains available. Large WAV exports that exceed the memory budget are rejected.
+- Streaming starts with three seconds of buffered listening time and rebuilds that buffer after an underrun. Completed replies can start immediately.
 - One active reply per tab; navigation, replacement, errors and disposal invalidate pending work and revoke object URLs.
 - Extension-owned audio has a conservative 64 MiB retention budget. Browser decoder and Claude's native buffers are controlled by their respective owners.
 - Unsupported capabilities or protocol changes restore the native button and show a recovery message.

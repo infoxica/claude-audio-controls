@@ -6,12 +6,16 @@ import { manifestLocale } from '../src/shared/locale-registry';
 const source = readFileSync('docs/STORE-LISTINGS.md', 'utf8');
 const sections = new Map([...source.matchAll(/^## ([\w-]+)\r?\n([\s\S]*?)(?=^## |$(?![\s\S]))/gm)].map(match => [match[1], match[2]]));
 const output = 'build/edge-store-listings';
+const staging = process.argv.includes('--staging');
 // Match the browser-compatible catalogs emitted by build-store-copy. UI-only
 // locales remain available in the player/site, not as browser-store resources.
 const locales = Object.keys(releaseLocales).filter(locale => manifestLocale(locale));
 for (const locale of locales) {
   const section = sections.get(locale);
-  const description = section?.split(/### Description\r?\n/)[1]?.trim();
+  let description = locale === 'en'
+    ? readFileSync('docs/STORE-LISTING-EN.txt', 'utf8').split(/\r?\n\r?\n/).slice(1).join('\n\n').trim()
+    : section?.split(/### Description\r?\n/)[1]?.trim();
+  if (description && staging) description = description.replaceAll('https://claude-audio-controls.infoxica.com/', 'https://claude-audio-controls-staging.anand224patel.workers.dev/');
   if (!description || description.length < 250 || description.length > 10000) throw new Error(`Missing or invalid Edge description: ${locale}`);
   const directory = `${output}/${locale}`;
   mkdirSync(directory, { recursive: true });

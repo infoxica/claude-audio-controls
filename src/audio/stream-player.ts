@@ -33,11 +33,19 @@ export class StreamPlayer implements PlaybackAdapter {
   private work: Promise<void>;
   private downloadWork: Promise<Blob> | null = null;
   private acceptFrames = true;
+  private playRequest = 0;
+  private wavWork: Promise<Blob> | null = null;
 
   constructor(readonly id: string, readonly format: NativeFormat, private limit = MAX_RETAINED_BYTES) {
     this.media.preload = 'auto';
     this.media.preservesPitch = true;
     this.media.setAttribute('data-claude-ra-owned', '');
+    this.media.addEventListener('waiting', () => {
+      if (this.wantsPlay && !this.complete && this.media.currentTime > 0) {
+        this.media.pause();
+        void this.play().catch(error => this.fail(error));
+      }
+    }, { signal: this.abort.signal });
     this.media.addEventListener('error', () => this.fail('The browser could not decode this audio.'), { signal: this.abort.signal });
     for (const name of ['playing', 'pause', 'waiting', 'ended', 'timeupdate', 'progress', 'seeked', 'ratechange', 'volumechange']) {
       this.media.addEventListener(name, () => { if (name === 'ended') this.wantsPlay = false; this.emit(); }, { signal: this.abort.signal });
@@ -154,17 +162,27 @@ export class StreamPlayer implements PlaybackAdapter {
   }
   async play(): Promise<void> {
     if (this.closed) return;
+    const request = ++this.playRequest;
     this.wantsPlay = true; this.emit();
     try {
       await this.work;
-      if (this.closed || !this.wantsPlay) return;
+      await new Promise<void>(resolve => {
+        const check = () => {
+          const ahead = this.state.buffered.end - this.media.currentTime;
+          if (this.closed || !this.wantsPlay || request !== this.playRequest || this.complete || ahead >= 3 * this.media.playbackRate) {
+            this.listeners.delete(check); resolve();
+          }
+        };
+        this.listeners.add(check); check();
+      });
+      if (this.closed || !this.wantsPlay || request !== this.playRequest) return;
       if (this.media.ended) this.media.currentTime = 0;
       await this.media.play();
     } catch (error) {
       if (!this.closed && this.wantsPlay) { this.wantsPlay = false; this.emit(); throw error; }
     }
   }
-  pause(): void { this.wantsPlay = false; this.media.pause(); this.emit(); }
+  pause(): void { this.playRequest++; this.wantsPlay = false; this.media.pause(); this.emit(); }
   seek(seconds: number): void {
     if (!Number.isFinite(seconds) || !this.state.capabilities.seek) return;
     this.media.currentTime = Math.max(this.state.buffered.start, Math.min(seconds, this.state.buffered.end - .001)); this.emit();
@@ -173,9 +191,44 @@ export class StreamPlayer implements PlaybackAdapter {
   changeVolume(volume: number): void { if (Number.isFinite(volume)) this.media.volume = Math.max(0, Math.min(1, volume)); }
   subscribe(listener: (state: PlaybackState) => void): () => void { this.listeners.add(listener); listener(this.state); return () => this.listeners.delete(listener); }
   private emit(): void { for (const listener of this.listeners) listener(this.state); }
-  async download(): Promise<Blob> {
+  async download(format: 'native' | 'wav' = 'native'): Promise<Blob> {
     if (!this.complete || this.closed) throw new Error('Wait for the reply to finish generating.');
+    if (format === 'wav' && this.format === 'opus_48000_32') return this.wavWork ||= this.createWav().catch(error => { this.wavWork = null; throw error; });
     return this.downloadWork ||= this.createDownload();
+  }
+  private async createWav(): Promise<Blob> {
+    // Decode in bounded batches, retaining PCM16 only. Never allocate an entire float recording.
+    const parts: Uint8Array<ArrayBuffer>[] = [];
+    let bytes = 0, failure: unknown, timestamp = 0;
+    const decoder = new AudioDecoder({
+      error: error => { failure = error; },
+      output: data => {
+        try {
+          if (this.closed) throw new Error('Session ended');
+          const size = data.numberOfFrames * 2;
+          if (this.retained * 4 + this.muxed * 2 + (bytes + size) * 2 + 65536 > this.limit) throw new Error('WAV exceeds the 64 MiB memory limit. Download the native WebM instead.');
+          const samples = new Float32Array(data.numberOfFrames);
+          data.copyTo(samples, { planeIndex: 0, format: 'f32-planar' });
+          const pcm = new Uint8Array(size), view = new DataView(pcm.buffer);
+          for (let i = 0; i < samples.length; i++) view.setInt16(i * 2, Math.round(Math.max(-1, Math.min(1, samples[i])) * (samples[i] < 0 ? 32768 : 32767)), true);
+          parts.push(pcm); bytes += size;
+        } catch (error) { failure = error; }
+        finally { data.close(); }
+      },
+    });
+    try {
+      decoder.configure(decoderConfig);
+      for (let i = 0; i < this.parts.length; i++) {
+        if (failure) throw failure;
+        if (this.closed) throw new Error('Session ended');
+        const part = this.parts[i];
+        decoder.decode(new EncodedAudioChunk({ type: 'key', timestamp: Math.round(timestamp * 1e6), data: part }));
+        timestamp += opusDuration(part);
+        if (i % 16 === 15) await decoder.flush();
+      }
+      await decoder.flush(); if (failure) throw failure;
+      return wav(parts, bytes, 48000);
+    } finally { if (decoder.state !== 'closed') decoder.close(); }
   }
   private async createDownload(): Promise<Blob> {
     if (this.format === 'pcm_16000') return wav(this.parts, this.retained);
@@ -200,7 +253,7 @@ export class StreamPlayer implements PlaybackAdapter {
     // Finalization already releases the encoder and writer. Cancel only unfinished output.
     if (this.output && this.output.state !== 'finalized') void this.output.cancel().catch(() => {});
     this.output = null;
-    this.sourceBuffer = null; this.track = null; this.parts = []; this.downloadWork = null; this.retained = 0;
+    this.sourceBuffer = null; this.track = null; this.parts = []; this.downloadWork = null; this.wavWork = null; this.retained = 0;
     this.emit(); this.listeners.clear();
   }
 }

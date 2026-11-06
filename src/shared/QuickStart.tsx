@@ -15,7 +15,7 @@ export function QuickStart({ language }: { language: string }) {
     else localStorage.setItem('quickStartDismissed', 'true');
   };
   if (dismissed) return null;
-  return <aside className="release-ui" style={{ padding: '12px 16px' }}>
-    <div className="section-card"><strong>{copy.quickStart}</strong><p>{copy.quickStartBody}</p><button className="btn-outline" onClick={dismiss}>{copy.dismiss}</button></div>
+  return <aside className="release-ui quick-start">
+    <details><summary>{copy.quickStart}</summary><p>{copy.quickStartBody}</p><button className="btn-outline" onClick={dismiss}>{copy.dismiss}</button></details>
   </aside>;
 }

@@ -7,6 +7,7 @@ import { REVIEW_URLS, reviewStores, sponsorURL, coffeeURL, SPONSOR_AMOUNTS } fro
 import { coffeeCopy } from '../shared/i18n/coffee';
 import { ListeningUse, type ListeningActivity } from './listening-use';
 import { getLucideSvg } from './icons';
+import { feedbackURL } from '../shared/feedback';
 
 type Rect = { x: number; y: number; width: number; height: number };
 export function promptPosition(view: Rect, size: { width: number; height: number }, anchor: Rect, obstacles: Rect[]): { x: number; y: number } | undefined {
@@ -128,7 +129,8 @@ export class SupportPrompts {
     const el = document.createElement('section'); el.id = 'claude-ra-support-prompt'; el.dir = languageDirection(language); el.lang = resolveLanguage(language); el.setAttribute('aria-labelledby', 'claude-ra-support-title');
     const status = document.createElement('span'); status.className = 'claude-ra-support-announcement'; status.setAttribute('role', 'status'); el.append(status);
     const heading = document.createElement('h2'); heading.id = 'claude-ra-support-title'; heading.textContent = kind === 'donation' ? d.title : s[0];
-    const close = document.createElement('button'); close.type = 'button'; close.className = 'claude-ra-support-close'; close.innerHTML = getLucideSvg('x'); close.setAttribute('aria-label', d.never); close.title = d.never; close.onclick = () => void this.respond('dismiss'); el.append(heading, close);
+    const close = document.createElement('button'); close.type = 'button'; close.className = 'claude-ra-support-close'; close.innerHTML = getLucideSvg('x'); close.setAttribute('aria-label', d.never); close.title = d.never; close.onclick = () => void this.respond('dismiss'); el.append(heading); if (kind === 'donation') el.append(close);
+    el.dataset.kind = kind;
     const paragraph = (text: string) => { const p = document.createElement('p'); p.textContent = text; el.append(p); };
     paragraph(kind === 'donation' ? d.value : s[1]);
     const links = document.createElement('div'); links.className = 'claude-ra-support-actions';
@@ -143,7 +145,14 @@ export class SupportPrompts {
       coffeeHeading.innerHTML = getLucideSvg('coffee'); coffeeHeading.append(document.createTextNode(coffeeCopy(language) + ' · PayPal')); links.append(coffeeHeading);
       for (const amount of SPONSOR_AMOUNTS) link(coffeeURL(amount), `US$${amount}`, 'donation', `${coffeeCopy(language)} · US$${amount} · PayPal`);
     }
-    for (const store of reviewStores(navigator.userAgent)) link(REVIEW_URLS[store], `${s[3]} · ${store === 'edge' ? 'Edge' : 'Chrome'}`, 'review');
+    if (kind === 'review') {
+      const store = reviewStores(navigator.userAgent)[0];
+      if (store) link(REVIEW_URLS[store], s[3], 'review');
+      else { const review = document.createElement('button'); review.type = 'button'; review.disabled = true; review.textContent = s[3]; links.append(review); }
+      links.firstElementChild?.classList.add('claude-ra-primary-action');
+      const feedback = feedbackURL(resolveLanguage(language), 'installed', undefined, 'system', 'suggestion');
+      if (feedback) link(feedback, s[2], 'review');
+    } else for (const store of reviewStores(navigator.userAgent)) link(REVIEW_URLS[store], `${s[3]} · ${store === 'edge' ? 'Edge' : 'Chrome'}`, 'review');
     el.append(links);
     if (kind === 'donation') paragraph(d.privacy);
     const actions = document.createElement('div'); actions.className = 'claude-ra-support-actions secondary';

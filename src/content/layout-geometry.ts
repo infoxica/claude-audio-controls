@@ -36,7 +36,7 @@ function resolveWithActions(p: LayoutProfile, v: Rect, expanded: boolean, compos
   return null;
 }
 function resolveGeometry(p: LayoutProfile, v: Rect, expanded: boolean, composer: Rect | undefined, rtl: boolean, narrow: boolean, environment: GeometryEnvironment, controlsLength: number): PlayerGeometry | null {
-  const gap = 6, thick = 48, seekLength = 244;
+  const gap = 6, thick = 46, seekLength = 244;
   let compactControls = controlsLength === COMPACT_CONTROLS_LENGTH;
   let a: Rect, b: Rect, circle: Rect, circleVisual: Rect | undefined, verticalSeek = false, verticalControls = false, surface: Rect | undefined;
   if (p.preset === 'composer') {
@@ -44,17 +44,17 @@ function resolveGeometry(p: LayoutProfile, v: Rect, expanded: boolean, composer:
     const width = composer.width, stacked = narrow, dockControlsLength = width < 600 ? COMPACT_CONTROLS_LENGTH : controlsLength;
     compactControls = (stacked ? width - 12 : dockControlsLength) < FULL_CONTROLS_LENGTH;
     if (!stacked && width < 430) return null;
-    const contentWidth = width - 12, controlsHeight = 48;
-    const height = stacked ? 48 + controlsHeight + 4 : 52;
+    const contentWidth = width - 12, controlsHeight = 46;
+    const height = stacked ? 46 + controlsHeight + 4 : 50;
     surface = rect(composer.x, composer.y - height, width, height);
     const firstY = surface.y + 2;
     if (stacked) {
-      a = rect(composer.x + 6, firstY, contentWidth, 48);
-      b = rect(composer.x + 6, firstY + 48, contentWidth, controlsHeight);
+      a = rect(composer.x + 6, firstY, contentWidth, 46);
+      b = rect(composer.x + 6, firstY + 46, contentWidth, controlsHeight);
       if (!p.seekFirst) { b.y = firstY; a.y = firstY + controlsHeight; }
     } else {
-      a = rect(composer.x + 6, firstY, width - dockControlsLength - 62, 48);
-      b = rect(a.x + a.width + 4, firstY, dockControlsLength, 48);
+      a = rect(composer.x + 6, firstY, width - dockControlsLength - 62, 46);
+      b = rect(a.x + a.width + 4, firstY, dockControlsLength, 46);
       if (!p.seekFirst) { b.x = composer.x + 6; a.x = b.x + b.width + 4; }
     }
     circle = rect(rtl ? composer.x + 2 : composer.x + width - 46, stacked ? a.y + 2 : firstY + 2, 44, 44);
@@ -77,15 +77,15 @@ function resolveGeometry(p: LayoutProfile, v: Rect, expanded: boolean, composer:
     }
     if (composer && leftSpace >= (p.seekFirst ? 220 : controlsLength) && rightSpace >= (p.seekFirst ? controlsLength : 220)) {
       const length = Math.min(560, p.seekFirst ? leftSpace : rightSpace);
-      circle = rect(composer.x + composer.width + gap, composer.y + 2, 44, 44);
-      a = rect(p.seekFirst ? composer.x - length - gap : circle.x + 44 + gap, composer.y, length, 48);
-      b = rect(p.seekFirst ? circle.x + 44 + gap : composer.x - controlsLength - gap, composer.y, controlsLength, 48);
+      circle = rect(composer.x + composer.width + gap, composer.y + 1, 44, 44);
+      a = rect(p.seekFirst ? composer.x - length - gap : circle.x + 44 + gap, composer.y, length, 46);
+      b = rect(p.seekFirst ? circle.x + 44 + gap : composer.x - controlsLength - gap, composer.y, controlsLength, 46);
     } else {
-      const h = 48;
+      const h = 46;
       compactControls = width < FULL_CONTROLS_LENGTH;
       if (width < COMPACT_CONTROLS_LENGTH) return null;
       const bottom = composer ? Math.min(v.y + v.height, composer.y - 8) : v.y + v.height;
-      a = rect(v.x + (v.width - width - 50) / 2, bottom - h - 54, width, 48);
+      a = rect(v.x + (v.width - width - 50) / 2, bottom - h - 54, width, 46);
       b = rect(a.x, a.y + 54, width, h); circle = rect(b.x + width + 6, bottom - 44, 44, 44);
       if (!p.seekFirst) { b.y = a.y; a.y = b.y + h + 6; }
     }

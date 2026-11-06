@@ -1,0 +1,33 @@
+Claude Audio Controls & Read Aloud
+
+Claude Audio Controls & Read Aloud adds pause, seek, playback speed, volume and audio downloads to Claude's native Read Aloud feature. Listen to long Claude answers at your own pace while keeping the conversation in view.
+
+Start with Claude's own Read Aloud button on a completed reply. Claude generates the voice; this extension adds playback controls in your browser. No separate text-to-speech service or API key is required.
+
+PLAYBACK CONTROLS
+• Pause and resume, seek through received audio, and replay a reply.
+• Choose playback speeds from 0.5× to 3×.
+• Adjust volume, mute, and use configurable skip steps or hold-to-seek.
+• Download completed audio as WAV, with native WebM/Opus also available for Opus responses.
+• See buffering status and an optional notification when the complete audio is ready.
+
+A PLAYER THAT FITS YOUR CHAT
+Keep the controls above the composer or choose a corner, side, or automatic layout. Drag to reposition, swap the progress and control bars, collapse the player, or hide it when you do not need it. The player follows Claude's light or dark appearance and adapts to narrow windows.
+
+PREFERENCES AND SHORTCUTS
+Choose a default speed, volume, seek step and interface language. The interface supports 67 languages, including right-to-left layouts. Playback shortcuts stay inactive while you type. Show or hide controls with Alt+Shift+Y on Windows/Linux or Option+Shift+Y on macOS. Browser shortcuts can be customized in the browser's extension shortcut settings.
+
+PRIVACY
+Audio and the current reply's playback state are processed locally. The extension does not upload conversations, audio, listening history or automatic diagnostics to Infoxica. Preferences may synchronize through your browser. Optional support reminders use device-local aggregate usage counters and reminder choices, without conversation identities or content. There is no extension analytics or telemetry.
+
+Optional feedback opens a separate hosted form. It asks for a category/reason and optional comment, with version, language and coarse browser/OS information; no name or email is required. Website analytics load only after consent. Feedback forms have no analytics.
+
+REQUIREMENTS
+Use a current Chrome or Microsoft Edge browser and a Claude account with native Read Aloud available. The extension controls read-aloud replies, not live voice conversations or microphone input. Claude's own service availability and account requirements still apply.
+
+An independent open-source project by Infoxica. Not affiliated with or endorsed by Anthropic. Claude is a trademark of Anthropic.
+
+Website: https://claude-audio-controls.infoxica.com/
+Help: https://claude-audio-controls.infoxica.com/#help
+Privacy: https://github.com/infoxica/claude-audio-controls/blob/main/PRIVACY.md
+Source and support: https://github.com/infoxica/claude-audio-controls

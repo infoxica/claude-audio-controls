@@ -33,13 +33,13 @@ export function opusDuration(packet: Uint8Array): number {
   return frameMs * frames / 1000;
 }
 
-export function wav(parts: Uint8Array<ArrayBuffer>[], bytes: number): Blob {
+export function wav(parts: Uint8Array<ArrayBuffer>[], bytes: number, sampleRate = 16000): Blob {
   if (!bytes || bytes % 2) throw new Error('Incomplete PCM samples');
   const header = new ArrayBuffer(44), view = new DataView(header);
   const ascii = (at: number, s: string) => [...s].forEach((c, i) => view.setUint8(at + i, c.charCodeAt(0)));
   ascii(0, 'RIFF'); view.setUint32(4, 36 + bytes, true); ascii(8, 'WAVE'); ascii(12, 'fmt ');
   view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
-  view.setUint32(24, 16000, true); view.setUint32(28, 32000, true);
+  view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true);
   view.setUint16(32, 2, true); view.setUint16(34, 16, true); ascii(36, 'data'); view.setUint32(40, bytes, true);
   return new Blob([header, ...parts], { type: 'audio/wav' });
 }

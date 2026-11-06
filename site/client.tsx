@@ -1,4 +1,5 @@
 import { installImageViewer } from './image-viewer';
+import { installLayoutCarousel } from './layout-carousel';
 import { hydrateRoot } from 'react-dom/client';
 import { SiteNavigation, type SiteNavigationProps } from './components';
 import { HeaderControls, FaqAccordion, ConsentBanner, type HeaderControlsProps, type FaqAccordionProps, type ConsentBannerProps } from './components';
@@ -14,6 +15,7 @@ const faq = document.getElementById('site-faq');
 if (faq) hydrateRoot(faq, <FaqAccordion {...props<FaqAccordionProps>('site-faq')} />, { identifierPrefix: 'site-faq' });
 hydrateRoot(document.getElementById('site-consent')!, <ConsentBanner {...props<ConsentBannerProps>('site-consent')} />, { identifierPrefix: 'site-consent' });
 
+installLayoutCarousel();
 installImageViewer();
 
 const header = document.querySelector<HTMLElement>('.top');

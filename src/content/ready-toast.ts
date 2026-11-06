@@ -1,4 +1,5 @@
 import { getLucideSvg } from './icons';
+import { readClaudeTheme } from '../shared/claude-theme';
 export class ReadyToast {
   private element: HTMLElement | null = null;
   private timer: ReturnType<typeof setTimeout> | undefined;
@@ -6,6 +7,10 @@ export class ReadyToast {
   show(message: string, download: string, dismiss: string, direction: 'ltr' | 'rtl', onDownload: () => void, language = 'en'): void {
     this.clear();
     const el = document.createElement('div'); el.id = 'claude-ra-ready-toast'; el.dir = direction; el.lang = language;
+    const theme = readClaudeTheme();
+    // Native control fills can contain alpha. Composite over an opaque page color.
+    el.style.background = `linear-gradient(${theme.surface}, ${theme.surface}), ${theme.mode === 'light' ? '#faf9f5' : '#191919'}`;
+    el.style.color = theme.text; el.style.borderColor = theme.border;
     const text = document.createElement('span'); text.setAttribute('role', 'status'); text.setAttribute('aria-live', 'polite');
     const action = document.createElement('button'); action.textContent = download; action.type = 'button';
     const close = document.createElement('button'); close.innerHTML = getLucideSvg('x'); close.setAttribute('aria-label', dismiss); close.title = dismiss; close.className = 'claude-ra-toast-dismiss'; close.type = 'button';

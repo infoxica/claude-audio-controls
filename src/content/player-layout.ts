@@ -30,6 +30,9 @@ function visibleBounds(el: HTMLElement): Rect | null {
   return right > left && bottom > top ? { x: left, y: top, width: right - left, height: bottom - top } : null;
 }
 export class PlayerLayout {
+  private observedChrome: HTMLElement[] = [];
+  private chromeResize = new ResizeObserver(() => this.changed());
+  private chromeAttributes = new MutationObserver(() => this.changed());
   private preferences = defaultLayout();
   private expanded = false;
   private composer: HTMLElement | null = null;
@@ -67,6 +70,7 @@ export class PlayerLayout {
       this.cancelDrag?.();
       try { this.preferences = migrateLayout(JSON.parse(event.newValue || 'null')); this.changed(); } catch {}
     });
+    document.addEventListener('transitionend', event => { if (event.target instanceof HTMLElement && this.observedChrome.includes(event.target)) this.changed(); }, true);
     this.installDrag(circle);
     for (const pill of [seek, controls]) {
       const grip = document.createElement('button'); grip.type = 'button'; grip.className = 'claude-ra-grip';
@@ -75,7 +79,7 @@ export class PlayerLayout {
     }
     this.extras.className = 'claude-ra-extras';
     this.extras.id = 'claude-ra-extras';
-    for (const el of controls.querySelectorAll(':scope > .claude-ra-speed-wrap, :scope > .claude-ra-volume-wrap, :scope > .claude-ra-download, :scope > .claude-ra-help-wrap')) this.extras.append(el);
+    for (const el of controls.querySelectorAll(':scope > .claude-ra-speed-wrap, :scope > .claude-ra-volume-wrap, :scope > .claude-ra-download-wrap, :scope > .claude-ra-help-wrap')) this.extras.append(el);
     this.more.type = 'button'; this.more.className = 'claude-ra-icon-btn claude-ra-more';
     this.more.innerHTML = getLucideSvg('ellipsis');
     this.more.setAttribute('aria-controls', this.extras.id); this.more.setAttribute('aria-expanded', 'false');
@@ -119,27 +123,47 @@ export class PlayerLayout {
     return { x: (v?.offsetLeft || 0) + left, y: (v?.offsetTop || 0) + top, width: Math.max(44, (v?.width || innerWidth) - left - right), height: Math.max(44, (v?.height || innerHeight) - top - bottom) };
   }
   private obstacles(): Rect[] {
-    return Array.from(document.querySelectorAll<HTMLElement>('header, [role="banner"], nav[aria-label], [data-testid="page-header"], [data-testid="app-shell-sidebar"], #app-shell-sidebar'))
-      .filter(e => !e.closest('[id^="claude-ra"], article, [data-message-author-role], [data-testid^="conversation-turn"], [data-writing-block]')).map(visibleBounds)
-      .filter((r): r is Rect => !!r && r.width <= innerWidth && (r.height < innerHeight * .7 || r.width < innerWidth * .45));
+    const elements = Array.from(document.querySelectorAll<HTMLElement>('header, [role="banner"], [data-testid="chat-header"], .dframe-header, [role="toolbar"][aria-label="Page tools"], nav, aside, [role="complementary"], [aria-label="Sidebar"], [data-cds="Sidebar"], [data-testid="sidebar"], [data-testid="artifact-panel"], [data-testid="artifacts-panel"], [data-testid="page-header"], [data-testid="app-shell-sidebar"], #app-shell-sidebar'))
+      .filter(e => !e.closest('[id^="claude-ra"], article, [data-message-author-role], [data-testid^="conversation-turn"], [data-writing-block]'));
+    // Sidebar overlays can resize or collapse without changing the composer.
+    // Observe their clipping ancestors too, but never the player's own styles.
+    const watched = new Set<HTMLElement>();
+    for (const element of elements) for (let node: HTMLElement | null = element; node; node = node.parentElement) watched.add(node);
+    const nodes = [...watched];
+    if (nodes.length !== this.observedChrome.length || nodes.some((node, i) => node !== this.observedChrome[i])) {
+      this.chromeResize.disconnect(); this.chromeAttributes.disconnect(); this.observedChrome = nodes;
+      for (const node of nodes) {
+        this.chromeResize.observe(node);
+        this.chromeAttributes.observe(node, { attributes: true, attributeFilter: ['class', 'style', 'hidden', 'aria-hidden', 'data-state'] });
+      }
+    }
+    return elements.map(visibleBounds)
+      .filter((r): r is Rect => !!r && r.width <= innerWidth && (r.height < innerHeight * .7 || r.width < innerWidth * .9));
+  }
+  private availableArea(viewport: Rect, obstacles: Rect[]): Rect {
+    const area = { ...viewport };
+    for (const o of obstacles) {
+      if (o.height > viewport.height * .6) {
+        if (o.x <= viewport.x && o.x + o.width > area.x) {
+          const right = area.x + area.width; area.x = o.x + o.width + 8; area.width = Math.max(0, right - area.x);
+        } else if (o.x + o.width >= viewport.x + viewport.width) {
+          area.width = Math.max(0, Math.min(area.x + area.width, o.x - 8) - area.x);
+        }
+      } else if (o.width > viewport.width * .45 && o.y < viewport.y + 90 && o.y + o.height < viewport.y + viewport.height / 2) {
+        const bottom = area.y + area.height; area.y = Math.max(area.y, o.y + o.height + 8); area.height = Math.max(0, bottom - area.y);
+      }
+    }
+    return area;
   }
   private nativeActions(): Rect[] {
     // Only application chrome outside conversations/composers; response toolbars
     // and email editors must never force the player away from its saved dock.
-    return Array.from(document.querySelectorAll<HTMLElement>('header button, [role="banner"] button, [data-testid="page-header"] button, [data-testid="conversation-header"] button, #conversation-header-actions button, [data-testid="share-chat-button"], [data-testid="conversation-options-button"]'))
+    return Array.from(document.querySelectorAll<HTMLElement>('[data-testid="chat-header"] :is(button, a, [role="checkbox"]), .dframe-header :is(button, a, [role="checkbox"]), [role="toolbar"][aria-label="Page tools"] :is(button, a, [role="checkbox"]), header button, [role="banner"] button, [data-testid="page-header"] button, [data-testid="conversation-header"] button, #conversation-header-actions button, [data-testid="share-chat-button"], [data-testid="conversation-options-button"]'))
       .filter(e => !e.closest('[id^="claude-ra"], article, [data-message-author-role], [data-testid^="conversation-turn"], [data-writing-block], form, [contenteditable]'))
       .map(visibleBounds).filter((r): r is Rect => !!r);
   }
   private geometry(p: LayoutProfile, expanded: boolean): PlayerGeometry | null {
-    const viewport = this.viewport(), obstacles = this.obstacles(), area = { ...viewport };
-    for (const o of obstacles) {
-      if (o.width > viewport.width * .45 && o.y < area.y + 90 && o.y + o.height < area.y + area.height / 2) {
-        const bottom = area.y + area.height; area.y = Math.max(area.y, o.y + o.height + 8); area.height = bottom - area.y;
-      }
-      if (o.height > viewport.height * .6 && o.width < viewport.width * .45 && o.x <= area.x) {
-        const right = area.x + area.width; area.x = Math.max(area.x, o.x + o.width + 8); area.width = right - area.x;
-      }
-    }
+    const viewport = this.viewport(), obstacles = this.obstacles(), area = this.availableArea(viewport, obstacles);
     const c = this.composer ? bounds(this.composer) : undefined;
     const native = this.composer && getComputedStyle(this.composer);
     const radius = (value: string | undefined) => value?.endsWith('%') ? (parseFloat(value) || 0) * (c?.width || 0) / 100 : parseFloat(value || '') || 0;
@@ -155,7 +179,7 @@ export class PlayerLayout {
     return result;
   }
   private compactGeometry(profile: LayoutProfile, expanded: boolean): PlayerGeometry | null {
-    const v = this.viewport(), obstacles = this.obstacles(), c = this.composer && bounds(this.composer);
+    const obstacles = this.obstacles(), v = this.availableArea(this.viewport(), obstacles), c = this.composer && bounds(this.composer);
     // A temporary floating surface keeps an absent/off-screen composer from
     // turning the expand button into a dead end. It is never persisted.
     const bottoms = [c ? c.y - 8 : v.y + v.height, v.y + v.height, v.y + 100];
@@ -182,6 +206,7 @@ export class PlayerLayout {
     const composerStyle = composer && getComputedStyle(composer);
     const nativeShadow = composerStyle?.boxShadow;
     const corners = composerStyle ? [composerStyle.borderTopLeftRadius, composerStyle.borderTopRightRadius] : undefined;
+    for (const element of [this.seek, this.controls, this.circle]) element.style.setProperty('--claude-ra-composer-radius', corners?.[0] || '14px');
     const signature = JSON.stringify([geometry, expanded, this.language(), composerStyle?.backgroundColor, composerStyle?.borderLeftColor, nativeShadow, corners]);
     if (this.previous === signature) {
       this.surface.hidden = !geometry?.surface || this.circle.classList.contains('claude-ra-hidden');
@@ -192,17 +217,23 @@ export class PlayerLayout {
     const before = elements.map(bounds);
     for (const el of elements) { el.getAnimations().forEach(a => a.cancel()); el.style.transform = ''; }
     if (!geometry) {
+      this.previous = ''; // Repaint when an overlay closes and the same geometry fits again.
       this.seek.classList.add('claude-ra-fit-hidden'); this.controls.classList.add('claude-ra-fit-hidden'); this.surface.hidden = true;
       this.join.hidden = true;
-      const v = this.viewport();
+      const obstacles = this.obstacles(), v = this.availableArea(this.viewport(), obstacles);
       const candidates = [
         this.geometry({ preset: 'composer', seekFirst: true }, false)?.circle,
         { x: v.x + v.width - 44, y: v.y, width: 44, height: 44 },
         { x: v.x, y: v.y, width: 44, height: 44 },
+        { x: v.x, y: v.y + v.height - 44, width: 44, height: 44 },
       ].filter((r): r is Rect => !!r);
-      this.place(this.circle, candidates.find(r => !this.obstacles().some(o => intersects(r, o))) || candidates[0]);
+      const target = candidates.find(r => fits(r, v) && !obstacles.some(o => intersects(r, o)) && (!composer || !intersects(r, bounds(composer))));
+      this.circle.classList.toggle('claude-ra-fit-hidden', !target);
+      if (target) this.place(this.circle, target);
       this.circle.classList.remove('claude-ra-dock-toggle'); this.circle.classList.add('claude-ra-logo'); setIcon(this.circle, 'claude-audio'); return;
     }
+    this.circle.classList.remove('claude-ra-fit-hidden');
+    const firstAppearance = !this.previous;
     const changed = this.previous !== signature, animate = !!this.previous && changed && !this.reducedMotion();
     const duration = expanded !== this.lastExpanded ? 200 : this.motion;
     this.previous = signature; this.motion = 220;
@@ -244,9 +275,9 @@ export class PlayerLayout {
       this.circle.style.setProperty('--dock-border-style', style?.borderLeftStyle || 'solid');
       this.circle.style.setProperty('--dock-shadow', nativeShadow || 'none');
       this.circle.style.setProperty('--dock-background', this.surface.style.background);
-      this.surface.style.borderTopLeftRadius = corners?.[0] || '28px';
-      this.surface.style.borderTopRightRadius = corners?.[1] || '28px';
-      this.surface.style.borderBottomLeftRadius = this.surface.style.borderBottomRightRadius = geometry.attachedToComposer ? '0' : '24px';
+      this.surface.style.borderTopLeftRadius = corners?.[0] || '14px';
+      this.surface.style.borderTopRightRadius = corners?.[1] || '14px';
+      this.surface.style.borderBottomLeftRadius = this.surface.style.borderBottomRightRadius = geometry.attachedToComposer ? '0' : '14px';
     }
     this.surface.classList.toggle('claude-ra-dock-closed', !expanded);
     if (animate) {
@@ -254,16 +285,19 @@ export class PlayerLayout {
         const after = bounds(el), old = before[i];
         if (el.hidden || !after.width || !old.width) return;
         let from = { transform: 'translate(' + (old.x - after.x) + 'px,' + (old.y - after.y) + 'px) scale(' + old.width / after.width + ',' + old.height / after.height + ')', transformOrigin: '0 0' };
-        if (docked && expanded !== this.lastExpanded && el !== this.circle) {
-          const travel = geometry.surface!.height;
+        if (expanded !== this.lastExpanded && el !== this.circle) {
           el.animate(expanded
-            ? [{ transform: 'translateY(' + travel + 'px)', clipPath: 'inset(0 0 100% 0)' }, { transform: 'translateY(0)', clipPath: 'inset(0)' }]
-            : [{ transform: 'translateY(0)', clipPath: 'inset(0)', visibility: 'visible' }, { transform: 'translateY(' + travel + 'px)', clipPath: 'inset(0 0 100% 0)', visibility: 'visible' }],
+            ? [{ transform: 'scale(0)', opacity: 0, transformOrigin: 'center' }, { transform: 'scale(1)', opacity: 1, transformOrigin: 'center' }]
+            : [{ transform: 'scale(1)', opacity: 1, transformOrigin: 'center', visibility: 'visible' }, { transform: 'scale(0)', opacity: 0, transformOrigin: 'center', visibility: 'visible' }],
             { duration, easing: 'cubic-bezier(.2,.8,.2,1)' });
         } else {
           el.animate([from, { transform: 'translate(0,0) scale(1)', transformOrigin: '0 0' }], { duration, easing: 'cubic-bezier(.16,1,.3,1)' });
         }
       });
+    }
+    if ((firstAppearance || expanded !== this.lastExpanded) && !this.reducedMotion()) {
+      this.circle.getAnimations().forEach(animation => animation.cancel());
+      this.circle.animate([{ transform: 'scale(0)', opacity: 0, transformOrigin: 'center' }, { transform: 'scale(1)', opacity: 1, transformOrigin: 'center' }], { duration: 200, easing: 'cubic-bezier(.2,.8,.2,1)' });
     }
     this.lastExpanded = expanded;
     const copy = featureCopy(this.language());
@@ -276,10 +310,11 @@ export class PlayerLayout {
   positionPopovers(): void {
     const v = this.viewport();
     this.more.setAttribute('aria-expanded', String(this.extras.classList.contains('claude-open')));
+    for (const wrap of this.controls.querySelectorAll<HTMLElement>('.claude-ra-volume-wrap, .claude-ra-download-wrap')) wrap.querySelector('button')?.setAttribute('aria-expanded', String(wrap.classList.contains('claude-open')));
     for (const pop of this.controls.querySelectorAll<HTMLElement>('.claude-ra-extras, .claude-ra-popover, .claude-ra-volume-popover')) {
       const trigger = (pop === this.extras ? this.more : pop.parentElement!).getBoundingClientRect();
       const above = Math.max(44, trigger.top - v.y - 8), below = Math.max(44, v.y + v.height - trigger.bottom - 8), placeAbove = above >= below;
-      pop.style.maxWidth = v.width + 'px'; pop.style.maxHeight = Math.min(v.height, placeAbove ? above : below) + 'px';
+      pop.style.maxWidth = v.width + 'px'; pop.style.maxHeight = (pop.classList.contains('claude-ra-help') ? v.height : Math.min(v.height, placeAbove ? above : below)) + 'px';
       const w = pop.offsetWidth || 180, h = pop.offsetHeight || 200;
       if (pop === this.extras && this.controls.classList.contains('claude-ra-vertical')) {
         const rail = bounds(this.controls);
@@ -406,12 +441,13 @@ export class PlayerLayout {
               if (!pill) outline.classList.add('claude-ra-target-detail');
               this.place(outline, r);
               const native = this.composer && getComputedStyle(this.composer);
-              outline.style.borderRadius = kind === 'surface' ? (native?.borderTopLeftRadius || '28px') + ' ' + (native?.borderTopRightRadius || '28px') + ' 0 0' : '24px';
+              outline.style.borderRadius = kind === 'surface' ? (native?.borderTopLeftRadius || '14px') + ' ' + (native?.borderTopRightRadius || '14px') + ' 0 0' : geometry.surface && kind !== 'circle' ? '0' : (native?.borderTopLeftRadius || '14px');
               element.append(outline);
             }
             const hit = pill ? pill === this.seek ? geometry.seek : geometry.controls : geometry.circle;
             if (!pill) {
               const marker = document.createElement('div'); marker.className = 'claude-ra-drop-shape claude-ra-drop-marker'; marker.dataset.part = 'marker';
+              marker.style.borderRadius = this.composer ? getComputedStyle(this.composer).borderTopLeftRadius : '14px';
               this.place(marker, hit);
               element.append(marker);
             }

@@ -13,7 +13,7 @@ test('MacBook CSS viewports retain split placement with full-size compact button
     const c = { x: (width - 760) / 2, y: 780, width: 760, height: 80 };
     const g = dockGeometry({ preset: 'original', seekFirst }, v, true, c)!;
     expect(g.circle.x).toBe(c.x + c.width + 6);
-    expect(g.controls.height).toBe(48);
+    expect(g.controls.height).toBe(46);
     expect(g.controls.width).toBeGreaterThanOrEqual(224);
     expect(g.seek.width).toBeGreaterThanOrEqual(220);
     for (const r of [g.seek, g.controls, g.circle]) {
@@ -29,7 +29,7 @@ test('compact vertical and corner controls preserve a constrained preset', () =>
     const g = dockGeometry({ preset, seekFirst }, v, true)!;
     expect(g.compactControls).toBe(true);
     expect(g.controls.height).toBe(224);
-    expect(g.controls.width).toBe(48);
+    expect(g.controls.width).toBe(46);
     for (const r of [g.seek, g.controls, g.circle]) expect(fits(r, v)).toBe(true);
   }
   for (const preset of ['bottom-left', 'bottom-right'] as const) {
@@ -37,7 +37,7 @@ test('compact vertical and corner controls preserve a constrained preset', () =>
     const c = { x: 376, y: 780, width: 760, height: 100 };
     const g = dockGeometry({ preset, seekFirst: true }, v, true, c)!;
     expect(g.compactControls).toBe(true);
-    expect(g.controls.height).toBe(48);
+    expect(g.controls.height).toBe(46);
     expect(intersects(g.controls, c)).toBe(false);
   }
 });
@@ -77,7 +77,7 @@ test('mobile docks are flush, horizontal, reversible and direction-aware', () =>
     expect(g.surface!.y + g.surface!.height).toBe(composer.y);
     expect(g.surface!.width).toBe(composer.width);
     expect(g.circle.x).toBe(rtl ? composer.x + 2 : composer.x + composer.width - 46);
-    expect(g.surface!.height).toBe(width < 768 ? 100 : 52);
+    expect(g.surface!.height).toBe(width < 768 ? 96 : 50);
     expect(intersects(g.circle, g.seek)).toBe(false);
     expect(intersects(g.circle, g.controls)).toBe(false);
     expect(intersects(g.seek, g.controls)).toBe(false);
@@ -134,7 +134,7 @@ test('bottom L horizontal seek fills only the span beside the composer', () => {
   const v = {x:12,y:12,width:1576,height:776}, composer = {x:420,y:680,width:760,height:100};
   for (const preset of ['bottom-left', 'bottom-right'] as const) {
     const g = dockGeometry({preset,seekFirst:false},v,true,composer)!;
-    expect(g.seek.width).toBe(348);
+    expect(g.seek.width).toBe(350);
     expect(intersects(g.seek,composer)).toBe(false);
     expect(intersects(g.controls,composer)).toBe(false);
     expect(preset === 'bottom-left' ? composer.x-g.seek.x-g.seek.width : g.seek.x-composer.x-composer.width).toBe(6);

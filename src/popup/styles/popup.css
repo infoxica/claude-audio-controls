@@ -1,160 +1,4 @@
-:root,
-[data-chat-theme='blue'] {
-  --bg-base: #191919;
-  --bg-surface: #1f1e1b;
-  --bg-surface-hover: #2f2f2f;
-  --bg-card: rgba(255, 255, 255, 0.05);
-  --bg-card-hover: rgba(255, 255, 255, 0.09);
-  --border-color: rgba(255, 255, 255, 0.1);
-  --border-focus: rgba(57, 104, 200, 0.5);
-  
-  --text-primary: #ececec;
-  --text-secondary: #b4b4b4;
-  --text-muted: #8e8e8e;
-  
-  --accent: #257de0;
-  --accent-hover: #257de0;
-  --accent-glow: rgba(44, 103, 197, 0.25);
-  --accent-light: rgba(44, 103, 197, 0.14);
-  
-  --danger: #ef4444;
-  --success: #257de0;
-  --warning: #f59e0b;
-  
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-full: 9999px;
-  
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
-  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-smooth: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Green Theme */
-[data-chat-theme='green'] {
-  --accent: #48a04c;
-  --accent-hover: #53b559;
-  --accent-glow: rgba(72, 160, 76, 0.25);
-  --accent-light: rgba(72, 160, 76, 0.15);
-  --success: #48a04c;
-}
-
-/* Purple Theme */
-[data-chat-theme='purple'] {
-  --accent: #7849d1;
-  --accent-hover: #8952ee;
-  --accent-glow: rgba(120, 73, 209, 0.25);
-  --accent-light: rgba(120, 73, 209, 0.15);
-  --success: #7849d1;
-}
-
-/* Orange Theme */
-[data-chat-theme='orange'] {
-  --accent: #d25e28;
-  --accent-hover: #ee7c37;
-  --accent-glow: rgba(210, 94, 40, 0.25);
-  --accent-light: rgba(210, 94, 40, 0.15);
-  --success: #d25e28;
-}
-
-/* Pink Theme */
-[data-chat-theme='pink'] {
-  --accent: #cf6194;
-  --accent-hover: #f077af;
-  --accent-glow: rgba(207, 97, 148, 0.25);
-  --accent-light: rgba(207, 97, 148, 0.15);
-  --success: #cf6194;
-}
-
-/* Yellow Theme */
-[data-chat-theme='yellow'] {
-  --accent: #d9a337;
-  --accent-hover: #f6c543;
-  --accent-glow: rgba(217, 163, 55, 0.25);
-  --accent-light: rgba(217, 163, 55, 0.15);
-  --success: #d9a337;
-}
-
-/* Black Theme */
-[data-chat-theme='black'] {
-  --accent: #ffffff;
-  --accent-hover: #f2f2f2;
-  --accent-glow: rgba(255, 255, 255, 0.25);
-  --accent-light: rgba(255, 255, 255, 0.15);
-  --success: #ffffff;
-}
-
-[data-theme='light'] {
-  --bg-base: #faf9f5;
-  --bg-surface: #f9f9f9;
-  --bg-surface-hover: #ececec;
-  --bg-card: rgba(0, 0, 0, 0.035);
-  --bg-card-hover: rgba(0, 0, 0, 0.07);
-  --border-color: rgba(0, 0, 0, 0.1);
-  
-  --text-primary: #0d0d0d;
-  --text-secondary: #5d5d5d;
-  --text-muted: #8e8e8e;
-}
-
-[data-theme='light'][data-chat-theme='blue'],
-[data-theme='light'] {
-  --accent: #257de0;
-  --accent-hover: #539af8;
-  --accent-glow: rgba(58, 131, 247, 0.2);
-  --accent-light: rgba(58, 131, 247, 0.1);
-  --success: #257de0;
-}
-
-[data-theme='light'][data-chat-theme='green'] {
-  --accent: #53b559;
-  --accent-hover: #6bc67f;
-  --accent-glow: rgba(83, 181, 89, 0.2);
-  --accent-light: rgba(83, 181, 89, 0.1);
-  --success: #53b559;
-}
-
-[data-theme='light'][data-chat-theme='purple'] {
-  --accent: #8952ee;
-  --accent-hover: #a67df2;
-  --accent-glow: rgba(137, 82, 238, 0.2);
-  --accent-light: rgba(137, 82, 238, 0.1);
-  --success: #8952ee;
-}
-
-[data-theme='light'][data-chat-theme='orange'] {
-  --accent: #ee7c37;
-  --accent-hover: #ef8b57;
-  --accent-glow: rgba(238, 124, 55, 0.2);
-  --accent-light: rgba(238, 124, 55, 0.1);
-  --success: #ee7c37;
-}
-
-[data-theme='light'][data-chat-theme='pink'] {
-  --accent: #f077af;
-  --accent-hover: #f68ebc;
-  --accent-glow: rgba(240, 119, 175, 0.2);
-  --accent-light: rgba(240, 119, 175, 0.1);
-  --success: #f077af;
-}
-
-[data-theme='light'][data-chat-theme='yellow'] {
-  --accent: #f6c543;
-  --accent-hover: #f8d45d;
-  --accent-glow: rgba(246, 197, 67, 0.2);
-  --accent-light: rgba(246, 197, 67, 0.1);
-  --success: #f6c543;
-}
-
-[data-theme='light'][data-chat-theme='black'] {
-  --accent: #000000;
-  --accent-hover: #1f1f1f;
-  --accent-glow: rgba(0, 0, 0, 0.2);
-  --accent-light: rgba(0, 0, 0, 0.1);
-  --success: #000000;
-}
+@import "../../shared/claude-surfaces.css";
 
 * {
   box-sizing: border-box;
@@ -233,9 +77,9 @@ body {
 
 .brand-info h1 {
   font-size: 13.5px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
-  letter-spacing: -0.01em;
+  letter-spacing: normal;
 }
 
 .brand-info span {
@@ -251,8 +95,8 @@ body {
 }
 
 .icon-button {
-  width: 28px;
-  height: 28px;
+  width: 44px;
+  height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -279,6 +123,7 @@ body {
 }
 
 .tab-btn {
+  min-height: 44px;
   flex: 1;
   display: inline-flex;
   align-items: center;
@@ -289,7 +134,7 @@ body {
   border: 1px solid transparent;
   background: transparent;
   color: var(--text-secondary);
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
@@ -302,9 +147,9 @@ body {
 }
 
 .tab-btn.active {
-  background: var(--accent-light);
-  color: var(--accent);
-  border-color: rgba(57, 104, 200, 0.25);
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+  border-color: transparent;
 }
 
 /* Content Area */
@@ -338,11 +183,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 /* Speed presets grid */
@@ -353,13 +198,14 @@ body {
 }
 
 .speed-chip {
+  min-height: 44px;
   padding: 5px 0;
   text-align: center;
   border-radius: var(--radius-sm);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -437,7 +283,7 @@ body {
 .volume-badge {
   min-width: 38px;
   text-align: right;
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 700;
   font-family: var(--font-mono);
   color: var(--text-primary);
@@ -592,7 +438,7 @@ input:checked + .slider-toggle:before {
 
 .primary-btn:hover {
   background: var(--accent-hover);
-  transform: translateY(-1px);
+  transform: none;
 }
 
 .secondary-links {
@@ -635,3 +481,28 @@ body { width: 360px; max-width: 100vw; min-height: 0; max-height: none; }
 }
 
 html[data-surface="toolbar-popup"], html[data-surface="toolbar-popup"] body { width:360px; min-width:360px; max-width:360px; }
+
+/* Compact Claude-style toolbar and settings rows. */
+.popup-header { display: flex; flex-wrap: wrap; gap: 10px; padding: 12px; background: var(--bg-base); }
+.popup-header .brand-wrapper { min-width: 0; flex: 1; gap: 8px; }
+.popup-header .brand-icon { border: 0; background: transparent; width: 24px; }
+.popup-header .brand-info h1 { font-size: 14px; font-weight: 500; }
+.popup-header .brand-info span { display: none; }
+.popup-header .header-actions { display: flex; flex-wrap: nowrap; gap: 2px; }
+.popup-header .icon-button { width: 32px; height: 32px; }
+.tabs-nav { background: var(--bg-base); padding: 6px 12px; gap: 4px; }
+.tab-btn { min-height: 36px; font-weight: 500; }
+.popup-body { padding: 0 16px; gap: 0; animation: none; }
+.section-card { padding: 16px 0; gap: 10px; }
+.section-title { color: var(--text-primary); font-size: 14px; font-weight: 400; }
+.section-title svg { display: none; }
+.popup-body > .section-card:first-child { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; }
+.preference-select { font: inherit; min-height: 36px; border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 10px; background: var(--bg-surface); color: var(--text-primary); }
+.toggle-label, .settings-label { font-weight: 400; }
+.quick-start { padding: 0 16px; }
+.quick-start details { padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+.quick-start summary { font-size: 13px; color: var(--text-secondary); cursor: pointer; }
+.quick-start p { padding-block: 10px; }
+.popup-footer { background: var(--bg-base); }
+.primary-btn { min-height: 36px; }
+@media (pointer: coarse) { .popup-header .icon-button, .tab-btn, .preference-select, .primary-btn { min-height: 44px; } }

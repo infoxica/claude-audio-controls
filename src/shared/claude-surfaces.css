@@ -1,0 +1,53 @@
+/* Claude semantic colors measured from the native light and dark interface.
+   Extension pages use system fonts; the on-page player inherits Claude's font. */
+:root {
+  --bg-base: #191919;
+  --bg-sidebar: #191919;
+  --bg-settings: #1f1f1f;
+  --bg-surface: #262624;
+  --bg-surface-hover: #30302e;
+  --bg-card: #ffffff06;
+  --bg-card-hover: #ffffff0f;
+  --border-color: #ffffff1f;
+  --text-primary: #ffffffed;
+  --text-secondary: #c2c0b6;
+  --text-muted: #a6a49d;
+  --accent: #d97757;
+  --accent-hover: #c6613f;
+  --accent-foreground: #fff;
+  --accent-light: color-mix(in srgb, var(--accent) 12%, transparent);
+  --accent-glow: transparent;
+  --border-focus: var(--accent);
+  --danger: #e87979;
+  --success: #70b58d;
+  --warning: #d7af6d;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 14px;
+  --radius-full: 9999px;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  --transition-fast: 150ms ease;
+  --transition-smooth: 200ms ease;
+}
+[data-theme='light'] {
+  --bg-base: #faf9f5;
+  --bg-sidebar: #f0eee6;
+  --bg-settings: #faf9f5;
+  --bg-surface: #f0eee6;
+  --bg-surface-hover: #e8e6de;
+  --bg-card: #00000003;
+  --bg-card-hover: #00000008;
+  --border-color: #1f1e1d26;
+  --text-primary: #1f1e1d;
+  --text-secondary: #625f57;
+  --text-muted: #716e66;
+  --accent: #c6613f;
+  --accent-hover: #ae5033;
+  --danger: #b83d3d;
+  --success: #2d7550;
+}
+:where(button, a, input, select, summary):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}

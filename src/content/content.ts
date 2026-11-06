@@ -1,3 +1,5 @@
+import { isClaudeChatRoute } from '../shared/claude-route';
+import release from '../../config/release.json';
 import type { StateMessage } from '../shared/messages';
 import { normalizedSettings } from '../shared/validate-settings';
 import { readClaudeTheme } from "../shared/claude-theme";
@@ -264,6 +266,7 @@ const standalone = typeof __USERSCRIPT__ !== 'undefined' && __USERSCRIPT__;
         `;
         const labels = commandLabels(settingsCache?.language, step);
         for (const command of COMMANDS) {
+          if (!commandBindings[command]) continue;
           const commandRow = document.createElement('div'); commandRow.className = 'claude-ra-shortcut-row';
           const label = document.createElement('span'); label.textContent = labels[command].replace('{s}', String(step));
           const key = document.createElement('span'); key.className = 'claude-ra-shortcut-key'; key.textContent = commandBindings[command] ? platformKeys(commandBindings[command]) : recoveryCopy().unassigned;
@@ -272,7 +275,10 @@ const standalone = typeof __USERSCRIPT__ !== 'undefined' && __USERSCRIPT__;
         const scope = document.createElement('p');
         scope.textContent = /Android/i.test(navigator.userAgent) ? featureCopy(settingsCache?.language).desktopShortcuts : recoveryCopy().shortcutScope;
         helpPopover.append(scope);
-        const settingsButton = document.createElement('button'); settingsButton.type = 'button'; settingsButton.textContent = t.popup.header.openOptions; settingsButton.onclick = () => dispatchAction('open-settings'); helpPopover.append(settingsButton);
+        const links = document.createElement('div'); links.className = 'claude-ra-help-links';
+        const settingsButton = document.createElement('button'); settingsButton.type = 'button'; settingsButton.textContent = t.popup.header.openOptions; settingsButton.onclick = () => dispatchAction('open-settings'); links.append(settingsButton);
+        const guide = document.createElement('a'); guide.href = release.siteUrl + (resolveLanguage(settingsCache?.language) === 'en' ? '' : resolveLanguage(settingsCache?.language) + '/') + 'guide/'; guide.target = '_blank'; guide.rel = 'noreferrer'; guide.textContent = t.popup.about.documentation; links.append(guide);
+        helpPopover.append(links);
       }
 
       const collapseBtn = rightRail.querySelector<HTMLElement>(".claude-ra-collapse-btn");
@@ -356,7 +362,7 @@ const standalone = typeof __USERSCRIPT__ !== 'undefined' && __USERSCRIPT__;
     window.postMessage({ type: 'CLAUDE_RA_STATE', state: playback.state } satisfies StateMessage, location.origin);
   }
 
-  const supportPrompts = new SupportPrompts(() => ({ language: settingsCache?.language, hidden: getSavedSettings().floatingUiHidden === true, composer: getComposer() }));
+  const supportPrompts = new SupportPrompts(() => ({ language: settingsCache?.language, hidden: !isClaudeChatRoute() || getSavedSettings().floatingUiHidden === true, composer: getComposer() }));
   const playback = new ClaudePlayback(media => {
     const changed = activeMedia !== media;
     activeMedia = media;
@@ -367,7 +373,7 @@ const standalone = typeof __USERSCRIPT__ !== 'undefined' && __USERSCRIPT__;
     updateControls(); broadcastLiveAudioState(true); scheduleLayoutSync();
   }, _message => showStatus(`${recoveryCopy().playError} ${recoveryCopy().nativeHelp}`, true), ready => {
     readyToast.clear();
-    if (ready && getSavedSettings().notifyDownloadReady !== false) readyToast.show(featureCopy(settingsCache?.language).ready, getI18n().content.tooltips.download, recoveryCopy().dismiss, languageDirection(settingsCache?.language), () => void downloadCurrentAudio(), resolveLanguage(settingsCache?.language));
+    if (ready && isClaudeChatRoute() && getSavedSettings().notifyDownloadReady !== false) readyToast.show(featureCopy(settingsCache?.language).ready, getI18n().content.tooltips.download, recoveryCopy().dismiss, languageDirection(settingsCache?.language), () => void downloadCurrentAudio(), resolveLanguage(settingsCache?.language));
   }, activity => supportPrompts.observe(activity), () => getI18n().content.tooltips.playPause);
 
   function getSeekInfo(media = activeMedia): { start: number; end: number; seekable: boolean } {
@@ -407,7 +413,7 @@ const standalone = typeof __USERSCRIPT__ !== 'undefined' && __USERSCRIPT__;
   // ---------------------------------------------------------------------
 
   function buildUI(): void {
-    if (leftRail || !document.body) return;
+    if (leftRail || !document.body || !isClaudeChatRoute()) return;
 
     floatingToggle = document.createElement("button");
     floatingToggle.id = "claude-ra-floating-toggle";
@@ -479,10 +485,13 @@ const standalone = typeof __USERSCRIPT__ !== 'undefined' && __USERSCRIPT__;
         </div>
       </div>
 
-      <button class="claude-ra-icon-btn claude-ra-download claude-ra-media-control"
-              disabled>
-        ${getLucideSvg("download")}
-      </button>
+      <div class="claude-ra-download-wrap claude-ra-media-control">
+        <button class="claude-ra-icon-btn claude-ra-download" disabled>${getLucideSvg("download")}</button>
+        <div class="claude-ra-popover claude-ra-download-menu" role="group">
+          <button class="claude-ra-download-format" type="button" data-format="wav">WAV</button>
+          <button class="claude-ra-download-format" type="button" data-format="native">WebM / Opus</button>
+        </div>
+      </div>
 
       <div class="claude-ra-help-wrap">
         <button class="claude-ra-icon-btn">
@@ -539,6 +548,14 @@ const standalone = typeof __USERSCRIPT__ !== 'undefined' && __USERSCRIPT__;
       const wrap = rightRail.querySelector<HTMLElement>(selector);
       wrap?.querySelector('button')?.addEventListener('click', event => { event.stopPropagation(); wrap.classList.toggle('claude-open'); playerLayout?.positionPopovers(); });
     }
+    if (volumeWrap) {
+      let closeTimer: ReturnType<typeof setTimeout> | undefined;
+      const openVolume = () => { clearTimeout(closeTimer); if (activeMedia) { volumeWrap?.classList.add('claude-open'); playerLayout?.positionPopovers(); } };
+      volumeWrap.addEventListener('pointerenter', event => { if (event.pointerType !== 'touch') openVolume(); });
+      volumeWrap.addEventListener('pointerleave', () => { closeTimer = setTimeout(() => { if (!volumeWrap?.contains(document.activeElement)) { volumeWrap?.classList.remove('claude-open'); playerLayout?.positionPopovers(); } }, 220); });
+      volumeWrap.addEventListener('focusin', event => { if (event.target instanceof HTMLElement && event.target.matches(':focus-visible') && (!(event.relatedTarget instanceof Node) || !volumeWrap?.contains(event.relatedTarget))) openVolume(); });
+      volumeWrap.addEventListener('focusout', event => { if (!(event.relatedTarget instanceof Node) || !volumeWrap?.contains(event.relatedTarget)) { volumeWrap?.classList.remove('claude-open'); playerLayout?.positionPopovers(); } });
+    }
     rightRail.addEventListener('click', () => playerLayout?.positionPopovers());
 
 
@@ -584,7 +601,16 @@ const standalone = typeof __USERSCRIPT__ !== 'undefined' && __USERSCRIPT__;
       { passive: false }
     );
 
-    downloadButton?.addEventListener("click", downloadCurrentAudio);
+    downloadButton?.addEventListener('click', event => {
+      event.stopPropagation();
+      if (playback.format !== 'opus_48000_32') { void downloadCurrentAudio(); return; }
+      rightRail?.querySelector('.claude-ra-download-wrap')?.classList.toggle('claude-open');
+      playerLayout?.positionPopovers();
+    });
+    rightRail.querySelectorAll<HTMLButtonElement>('.claude-ra-download-format').forEach(button => button.addEventListener('click', () => {
+      rightRail?.querySelector('.claude-ra-download-wrap')?.classList.remove('claude-open');
+      void downloadCurrentAudio(button.dataset.format === 'wav' ? 'wav' : 'native');
+    }));
 
     applyI18nLabels();
     setControlsEnabled(Boolean(activeMedia));
@@ -644,11 +670,20 @@ const standalone = typeof __USERSCRIPT__ !== 'undefined' && __USERSCRIPT__;
   }
 
   function syncComposerLayout(): void {
+    const chat = isClaudeChatRoute();
+    document.documentElement.classList.toggle('claude-ra-off-chat', !chat);
+    if (!chat) {
+      if (activeMedia || playback.media) playback.dispose();
+      activeMedia = null; readyToast.clear();
+      rightRail?.querySelectorAll('.claude-open').forEach(el => el.classList.remove('claude-open'));
+      return;
+    }
+    if (!leftRail) buildUI();
     if (!leftRail || !rightRail || !floatingToggle) return;
 
     if (location.pathname !== conversationPath) {
       conversationPath = location.pathname;
-      playback.dispose(); activeMedia = null; userForcedExpand = false;
+      playback.dispose(); activeMedia = null; userForcedExpand = false; userForcedCollapsed = false;
       updateControls();
     }
     const composer = getComposer();
@@ -834,11 +869,24 @@ const standalone = typeof __USERSCRIPT__ !== 'undefined' && __USERSCRIPT__;
 
     if (!activeMedia) {
       setControlsEnabled(false);
+      cache.currentTimeStr = '0:00'; cache.durationStr = '--:--'; cache.isPaused = true;
+      if (currentLabel) currentLabel.textContent = cache.currentTimeStr;
+      if (durationLabel) durationLabel.textContent = cache.durationStr;
+      if (seekSlider) { seekSlider.min = '0'; seekSlider.max = '1'; seekSlider.value = '0'; seekSlider.disabled = true; }
+      sliderDragging = false;
+      setIcon(playButton, 'play');
+      playButton?.setAttribute('aria-busy', 'false');
+      playButton?.classList.remove('claude-ra-buffering');
+      downloadButton?.setAttribute('disabled', '');
+      rightRail.querySelectorAll('.claude-open').forEach(el => el.classList.remove('claude-open'));
       return;
     }
 
     setControlsEnabled(true);
     downloadButton?.toggleAttribute("disabled", !playback.state.capabilities.download);
+    const wavOption = rightRail.querySelector<HTMLButtonElement>('[data-format="wav"]');
+    if (wavOption) wavOption.disabled = typeof AudioDecoder === 'undefined' || !playback.state.capabilities.download;
+    downloadButton?.setAttribute('aria-haspopup', playback.format === 'opus_48000_32' ? 'true' : 'false');
 
     const current = playback.time;
     const info = getSeekInfo(activeMedia);
@@ -932,12 +980,12 @@ const standalone = typeof __USERSCRIPT__ !== 'undefined' && __USERSCRIPT__;
     throw new Error('Unsupported download format');
   }
 
-  async function resolveDownloadBlob(): Promise<{ blob: Blob; mime: string; url: string }> {
-    const blob = await playback.blob();
+  async function resolveDownloadBlob(format: 'native' | 'wav'): Promise<{ blob: Blob; mime: string; url: string }> {
+    const blob = await playback.blob(format);
     return { blob, mime: blob.type, url: activeMedia?.currentSrc || activeMedia?.src || '' };
   }
 
-  async function downloadCurrentAudio(): Promise<void> {
+  async function downloadCurrentAudio(format: 'native' | 'wav' = 'native'): Promise<void> {
     if (!activeMedia || !downloadButton) return;
 
     const downloadMedia = activeMedia;
@@ -947,7 +995,7 @@ const standalone = typeof __USERSCRIPT__ !== 'undefined' && __USERSCRIPT__;
     setIcon(downloadButton, "loader-circle");
 
     try {
-      const { blob, mime, url } = await resolveDownloadBlob();
+      const { blob, mime, url } = await resolveDownloadBlob(format);
 
       if (activeMedia !== downloadMedia) throw new Error("The reply changed before the download was ready.");
       const ext = extensionFor(mime || blob.type, url);
@@ -973,7 +1021,7 @@ const standalone = typeof __USERSCRIPT__ !== 'undefined' && __USERSCRIPT__;
       showStatus(recoveryCopy().downloadError, true);
     } finally {
       downloadButton.classList.remove("claude-ra-download-busy");
-      downloadButton.removeAttribute("disabled");
+      downloadButton.toggleAttribute('disabled', !activeMedia || !playback.state.capabilities.download);
       setIcon(downloadButton, "download");
     }
   }
@@ -1016,6 +1064,7 @@ const standalone = typeof __USERSCRIPT__ !== 'undefined' && __USERSCRIPT__;
     userForcedExpand = !expanded; userForcedCollapsed = expanded; scheduleLayoutSync();
   }
   function dispatchAction(command: PlayerCommand): void {
+    if (!isClaudeChatRoute()) return;
     const step = getSavedSettings().tapSeekSeconds || CONFIG.tapSeekSeconds;
     if (command === 'toggle-collapse') return toggleCollapsed();
     if (command === 'reset-layout') { void playerLayout?.reset(); return; }
@@ -1128,7 +1177,15 @@ const standalone = typeof __USERSCRIPT__ !== 'undefined' && __USERSCRIPT__;
     }
 
     installSettingsBridge();
-    buildUI();
+    for (const method of ['pushState', 'replaceState'] as const) {
+      const original = history[method];
+      history[method] = function (...args: Parameters<History[typeof method]>) {
+        const result = original.apply(this, args); syncComposerLayout(); return result;
+      };
+    }
+    window.addEventListener('popstate', syncComposerLayout);
+    window.addEventListener('hashchange', syncComposerLayout);
+    syncComposerLayout();
     startObserver();
 
     log("Claude Audio Controls Extension Ready");

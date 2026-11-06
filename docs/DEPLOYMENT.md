@@ -23,3 +23,7 @@ The compatibility date is 2026-08-06, the maximum supported by the installed Min
 For production: configure the new store IDs and dedicated GA4 measurement ID in `config/release.json`, complete `config/acceptance.json`, and run `bun run release:check`. Add the custom domain route only after acceptance. The workflow does not deploy on push.
 
 The GitHub deployment workflow uses the environment-scoped `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets. Configure GitHub's `production` environment with a reviewer before enabling production dispatch. Extension publication is a separate manual, gated workflow. No store upload credential is inherited from the original project.
+
+## Production website launch — 2026-11-06
+
+The owner explicitly authorized launching the website before the extension release. Deployed version `fd51bcf4-b580-47c5-8a73-60e54f8baf0f` to the custom domain `claude-audio-controls.infoxica.com`. The homepage rendered successfully in the in-app browser. Command-line requests received a Cloudflare managed challenge (403), so automated store/crawler accessibility still needs checking. No security rules were changed. Store links remain disabled and the extension remains 0.1.0. The GitHub privacy policy at `https://github.com/infoxica/claude-audio-controls/blob/main/PRIVACY.md` was verified through the GitHub API. Earlier statements in this document about the production domain being unlaunched are superseded by this entry.

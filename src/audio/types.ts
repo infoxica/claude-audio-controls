@@ -18,7 +18,7 @@ export interface PlaybackAdapter {
   seek(seconds: number): void;
   changeRate(rate: number): void;
   changeVolume(volume: number): void;
-  download(): Promise<Blob>;
+  download(format?: 'native' | 'wav'): Promise<Blob>;
   subscribe(listener: (state: PlaybackState) => void): () => void;
   dispose(): void;
 }

@@ -51,6 +51,7 @@
       "name": "claude-audio-controls",
       "workers_dev": false,
       "preview_urls": false,
+      "routes": [{ "pattern": "claude-audio-controls.infoxica.com", "custom_domain": true }],
       "vars": {
         "ENVIRONMENT": "production",
         "TURNSTILE_SITE_KEY": "0x4AAAAAAF0wxxnPtuBNW-VT"

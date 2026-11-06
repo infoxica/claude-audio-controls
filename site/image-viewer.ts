@@ -19,14 +19,30 @@ export function installImageViewer(): void {
       event.preventDefault(); opener = link;
       image.src = link.href; image.alt = thumbnail.alt;
       caption.textContent = thumbnail.closest('figure')?.querySelector('figcaption')?.textContent || thumbnail.alt;
-      previousOverflow = document.documentElement.style.overflow;
+      if (!dialog.open) previousOverflow = document.documentElement.style.overflow;
       document.documentElement.style.overflow = 'hidden';
-      dialog.showModal(); close.focus();
+      if (!dialog.open) dialog.showModal();
+      close.focus();
     });
   }
   close.addEventListener('click', () => dialog.close());
   // This viewer has one focusable control; keep Tab/Shift+Tab inside the modal.
-  dialog.addEventListener('keydown', event => { if (event.key === 'Tab') { event.preventDefault(); close.focus(); } });
+  dialog.addEventListener('keydown', event => {
+    if (event.key === 'Tab') { event.preventDefault(); close.focus(); }
+    const carousel = opener?.closest('.layout-carousel');
+    if (!carousel || event.altKey || event.ctrlKey || event.metaKey) return;
+    const links = [...carousel.querySelectorAll<HTMLAnchorElement>('figure a')];
+    const current = links.indexOf(opener!);
+    const direction = document.documentElement.dir === 'rtl' ? -1 : 1;
+    let index: number;
+    if (event.key === 'ArrowRight') index = current + direction;
+    else if (event.key === 'ArrowLeft') index = current - direction;
+    else if (event.key === 'Home') index = 0;
+    else if (event.key === 'End') index = links.length - 1;
+    else return;
+    event.preventDefault();
+    links[(index + links.length) % links.length].click();
+  });
   dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
   dialog.addEventListener('close', () => {
     document.documentElement.style.overflow = previousOverflow;

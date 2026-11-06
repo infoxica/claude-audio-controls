@@ -37,28 +37,17 @@ export const QuickControls: React.FC<QuickControlsProps> = ({
 
   return (
     <div className="popup-body">
-      <VisibilitySettings settings={settings} onUpdateSettings={onUpdateSettings} />
-      <DownloadNotificationSettings settings={settings} onUpdateSettings={onUpdateSettings} />
-      <LayoutSettings language={settings.language} />
       {/* Speed Presets */}
       <div className="section-card">
         <div className="section-title">
           <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
             <Gauge size={13} /> {t.popup.quickControls.playbackSpeed}
           </span>
-          <span style={{ color: "var(--accent)", fontWeight: 700 }}>{settings.defaultSpeed}×</span>
+
         </div>
-        <div className="speed-grid">
-          {SPEED_PRESETS.map((s) => (
-            <button
-              key={s}
-              className={`speed-chip ${settings.defaultSpeed === s ? "active" : ""}`}
-              onClick={() => handleSpeedChange(s)}
-            >
-              {s}×
-            </button>
-          ))}
-        </div>
+        <select className="preference-select" aria-label={t.popup.quickControls.playbackSpeed} value={settings.defaultSpeed} onChange={e => handleSpeedChange(Number(e.target.value))}>
+          {SPEED_PRESETS.map(speed => <option key={speed} value={speed}>{speed}×</option>)}
+        </select>
       </div>
 
       {/* Volume Control */}
@@ -90,6 +79,10 @@ export const QuickControls: React.FC<QuickControlsProps> = ({
           />
         </div>
       </div>
+
+      <VisibilitySettings settings={settings} onUpdateSettings={onUpdateSettings} />
+      <DownloadNotificationSettings settings={settings} onUpdateSettings={onUpdateSettings} />
+      <LayoutSettings language={settings.language} />
 
       {/* Feature Toggles */}
       <div className="section-card">
