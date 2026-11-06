@@ -1,7 +1,9 @@
+import { ClaudeAudioIcon } from "../../shared/ClaudeAudioIcon";
+import { QuickStart } from "../../shared/QuickStart";
 import type { ThemePreference } from '../../shared/ThemeSelect';
 import { SupportCard } from "../../shared/SupportCard";
 import React from "react";
-import { Sparkles, ShieldCheck, BookOpen, Bug, Globe } from "lucide-react";
+import { ShieldCheck, BookOpen, Bug, Globe, CirclePlay, ArrowUpRight } from "lucide-react";
 import { GithubIcon } from "../../shared/GithubIcon";
 import { EXTENSION_VERSION } from "../../shared/constants";
 import { TranslationSchema } from "../../shared/i18n";
@@ -18,31 +20,22 @@ interface AboutTabProps {
 export const AboutTab: React.FC<AboutTabProps> = ({ t, language, theme }) => {
   return (
     <div className="popup-body popup-about">
-      <div className="section-card about-intro" style={{ textAlign: "center", alignItems: "center", padding: "18px 14px" }}>
-        <div
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: 12,
-            background: "linear-gradient(135deg, #3968c8, #2d55ad)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#ffffff",
-            marginBottom: 8,
-            boxShadow: "0 4px 12px rgba(16, 163, 127, 0.3)",
-          }}
-        >
-          <Sparkles size={22} />
+      <div className="section-card about-intro">
+        <div className="about-brand">
+          <ClaudeAudioIcon size={32} />
+          <div className="about-brand-copy">
+            <h2>{t.popup.about.title}</h2>
+            <p className="about-version">{t.common.version}{EXTENSION_VERSION} · {t.popup.about.byInfoxica}</p>
+          </div>
         </div>
-        <h2 style={{ fontSize: 19, fontWeight: 400 }}>{t.popup.about.title}</h2>
-        <span style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
-          {t.common.version}{EXTENSION_VERSION} • {t.popup.about.byInfoxica}
-        </span>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 10, lineHeight: 1.55 }}>
-          {getReleaseCopy(language).siteIntro}
-        </p>
+        <p className="about-description">{getReleaseCopy(language).siteIntro}</p>
       </div>
+
+      <a className="feature-tour-link" lang="en" href="../tour/index.html" target="_blank" rel="noreferrer">
+        <CirclePlay size={18} aria-hidden="true" /><span>Feature tour</span><ArrowUpRight size={16} aria-hidden="true" />
+      </a>
+
+      <QuickStart language={language} />
 
       <SupportCard language={language} theme={theme} surface="popup" />
 

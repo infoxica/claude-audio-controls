@@ -1,7 +1,8 @@
 import { Resvg } from '@resvg/resvg-js';
-import { mkdirSync, writeFileSync } from 'node:fs';
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="28" fill="#d97757"/><g stroke="#fffaf4" stroke-width="8" stroke-linecap="round"><path d="M25 49v30m17-47v64m17-47v30"/><path d="m82 41 27 23-27 23z" fill="#fffaf4" stroke-linejoin="round"/></g></svg>`;
+import { mkdirSync, writeFileSync, readFileSync, copyFileSync } from 'node:fs';
+const svg = readFileSync('assets/branding/icon.svg', 'utf8');
 mkdirSync('public/icons', { recursive: true });
 writeFileSync('public/icons/brand.svg', svg);
 for (const size of [16, 32, 48, 128, 256, 512]) writeFileSync(`public/icons/icon-${size}.png`, new Resvg(svg, { fitTo: { mode: 'width', value: size } }).render().asPng());
-console.log('Generated original waveform/play branding.');
+copyFileSync('assets/branding/icon.png', 'public/icons/icon-512.png');
+console.log('Generated icons from the supplied brand artwork.');

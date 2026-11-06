@@ -633,9 +633,9 @@
 #claude-ra-floating-toggle.claude-ra-dock-toggle svg { position: absolute; width: 18px; height: 18px; left: 13px; top: calc(var(--toggle-top, 8px) + 5px); }
 #claude-ra-floating-toggle.claude-ra-dock-toggle.claude-ra-logo::before { border: var(--dock-border-width, 1px) var(--dock-border-style, solid) var(--dock-border, var(--claude-ra-border)); border-bottom: 0; box-shadow: var(--dock-shadow, none); clip-path: inset(-8px -8px 0); border-radius: 8px 8px 0 0; background: var(--dock-background, var(--claude-ra-bg)); }
 #claude-ra-floating-toggle.claude-ra-dock-toggle:is(:hover, :focus-visible)::before { border-color: var(--dock-border, var(--claude-ra-border)); background: var(--claude-ra-bg-surface-hover); }
-#claude-ra-right .claude-ra-volume-popover { overflow: hidden; scrollbar-width: none; width: 52px; padding: 6px 3px 32px; }
+#claude-ra-right .claude-ra-volume-popover { overflow: hidden; scrollbar-width: none; width: 40px; padding: 6px 3px 32px; }
 #claude-ra-right .claude-ra-volume-popover::-webkit-scrollbar { display: none; }
-#claude-ra-right .claude-ra-volume-popover input[type=range] { position: static; transform: none; writing-mode: vertical-lr; direction: rtl; width: 44px; height: 100%; min-height: 44px; margin: 0; }
+#claude-ra-right .claude-ra-volume-popover input[type=range] { position: static; transform: none; writing-mode: vertical-lr; direction: rtl; width: 32px; height: 100%; min-height: 44px; margin: 0; }
 .claude-ra-volume-popover .claude-ra-range::-webkit-slider-runnable-track { width: 2px; height: 100%; }
 .claude-ra-volume-popover .claude-ra-range::-webkit-slider-thumb { margin-top: 0; margin-left: -4px; }
 .claude-ra-volume-popover .claude-ra-range::-moz-range-track { width: 2px; height: 100%; }
@@ -743,4 +743,13 @@ html.claude-ra-off-chat :is(#claude-ra-layer, #claude-ra-ready-toast, #claude-ra
 @media (prefers-reduced-motion: reduce) {
   .claude-ra-range::-webkit-slider-runnable-track, .claude-ra-range::-webkit-slider-thumb { transition: none; }
   .claude-ra-range::-moz-range-track, .claude-ra-range::-moz-range-thumb { transition: none; }
+}
+
+/* Give anchors and buttons the same line box in the help footer. */
+.claude-ra-help-links { align-items: center; }
+.claude-ra-help-links :is(a,button) { display: inline-flex; align-items: center; justify-content: flex-start; line-height: 1.4; box-sizing: border-box; margin: 0; }
+
+@media(pointer:coarse) {
+ #claude-ra-right .claude-ra-volume-popover { width:52px; }
+ #claude-ra-right .claude-ra-volume-popover input[type=range] { width:44px; }
 }

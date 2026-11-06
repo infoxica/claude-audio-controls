@@ -1,6 +1,6 @@
 import { ThemeSelect, ThemePreference } from '../../shared/ThemeSelect';
 import React from "react";
-import { Sliders, Keyboard, HelpCircle, Globe } from "lucide-react";
+import { Sliders, Keyboard, HelpCircle, Globe, CirclePlay } from "lucide-react";
 import { GithubIcon } from "../../shared/GithubIcon";
 import { ClaudeAudioIcon } from "../../shared/ClaudeAudioIcon";
 import { TranslationSchema } from "../../shared/i18n";
@@ -60,6 +60,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       <div className="sidebar-footer">
         <ThemeSelect value={theme} onChange={onThemeChange} language={language} />
+        <a href="../tour/index.html" target="_blank" rel="noreferrer" className="btn-outline" lang="en" style={{ width: "100%", justifyContent: "center", textDecoration: "none" }}>
+          <CirclePlay size={14} aria-hidden="true" /><span>Feature tour</span>
+        </a>
         <a href={websiteURL(language, 'sidebar')} target="_blank" rel="noreferrer" className="btn-outline" style={{ width: "100%", justifyContent: "center", textDecoration: "none" }}>
           <Globe size={14} /><span>{getReleaseCopy(language).website}</span>
         </a>

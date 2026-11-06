@@ -69,6 +69,9 @@ test('help fits the viewport and native composer corners are shared by controls'
   expect(await help.evaluate(el => el.scrollHeight <= el.clientHeight && el.scrollWidth <= el.clientWidth)).toBe(true);
   await expect(help.locator('.claude-ra-help-links')).toHaveCSS('border-top-style','solid');
   await expect(help.getByRole('link')).toHaveCSS('text-decoration-line','underline');
+  const alignment = await help.locator('.claude-ra-help-links').evaluate(el => Array.from(el.children).map(child => {const r=child.getBoundingClientRect(); return r.y+r.height/2;}));
+  expect(Math.abs(alignment[0]-alignment[1])).toBeLessThan(1);
+  await page.screenshot({path:'build/help-aligned.png'});
   expect(await page.locator('#claude-ra-floating-toggle').evaluate(el => getComputedStyle(el,'::before').borderRadius)).toBe('16px');
   await expect(page.locator('.claude-ra-grip').first()).toHaveCSS('border-radius','16px');
   expect(await page.locator('.claude-ra-play').evaluate(el => getComputedStyle(el,'::before').inset)).toBe('4px');
@@ -96,7 +99,7 @@ test('opaque download toast and compact support actions with review held for sto
   await page.screenshot({path:'build/support-prompt-preview.png',animations:'disabled'});
   await prompt.getByRole('button',{name:/later/i}).click();
   await expect(prompt).toHaveCount(0);
-  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('claude-ra-engagement-v1')).review.status)).toBe('later');
+  await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('claude-ra-engagement-v1')).review.status)).toBe('later');
 });
 
 for (const standalone of [false, true]) test(`${standalone ? 'userscript' : 'extension'} player: docking, controls, typing and download`, async ({ page }) => {
@@ -212,6 +215,7 @@ for (const standalone of [false, true]) test(`${standalone ? 'userscript' : 'ext
   await setup(page, standalone);
   await page.locator('.claude-ra-volume-btn').hover();
   await expect(page.locator('.claude-ra-volume-popover')).toBeVisible();
+  await expect(page.locator('.claude-ra-volume-popover')).toHaveCSS('width','40px');
   await page.locator('.claude-ra-volume-slider').hover();
   await expect(page.locator('.claude-ra-volume-popover')).toBeVisible();
   await page.locator('.claude-ra-volume-slider').focus(); await page.keyboard.press('ArrowDown');

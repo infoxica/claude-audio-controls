@@ -29,7 +29,13 @@ async function registerUninstall(): Promise<void> {
   await chrome.runtime.setUninstallURL(url);
 }
 const register = () => { void registerUninstall().catch(error => console.warn('Could not register feedback page', error)); };
-chrome.runtime.onInstalled.addListener(register);
+chrome.runtime.onInstalled.addListener(details => {
+  register();
+  // Only a new extension installation opens onboarding, never an update or userscript.
+  if (details.reason === 'install') {
+    void chrome.tabs.create({ url: chrome.runtime.getURL('src/tour/index.html') }).catch(() => {});
+  }
+});
 chrome.runtime.onStartup.addListener(register);
 chrome.runtime.onMessage.addListener((message, sender, reply) => {
   if (sender.id !== chrome.runtime.id) return;

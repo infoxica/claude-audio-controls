@@ -1,6 +1,6 @@
 {
   "name": "claude-audio-controls",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Audio Controls for Claude — Pause, Resume, Seeker, Speed, Volume, Download, and Shortcuts.",
   "type": "module",
   "scripts": {

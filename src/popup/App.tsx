@@ -2,7 +2,6 @@ import { useClaudeAccent } from '../shared/useClaudeAccent';
 import { useTheme } from '../shared/ThemeSelect';
 import config from "../../config/release.json";
 import { resolveLanguage } from "../shared/i18n/core";
-import { QuickStart } from "../shared/QuickStart";
 import { getReleaseCopy } from "../shared/i18n/release-copy";
 import React, { useEffect, useState } from "react";
 import { Header } from "./components/Header";
@@ -65,7 +64,6 @@ export const App: React.FC = () => {
         t={t}
       />
 
-      {activeTab === "controls" && <QuickStart language={settings.language} />}
       <TabNav activeTab={activeTab} onSelectTab={setActiveTab} t={t} />
 
       {saveError && <p role="alert" style={{ padding: 12 }}>{getReleaseCopy(settings.language).savedError}</p>}

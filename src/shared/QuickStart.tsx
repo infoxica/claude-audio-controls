@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import './release-ui.css';
 import { getReleaseCopy } from './i18n/release-copy';
 
@@ -16,6 +17,6 @@ export function QuickStart({ language }: { language: string }) {
   };
   if (dismissed) return null;
   return <aside className="release-ui quick-start">
-    <details><summary>{copy.quickStart}</summary><p>{copy.quickStartBody}</p><button className="btn-outline" onClick={dismiss}>{copy.dismiss}</button></details>
+    <details><summary><span>{copy.quickStart}</span><ChevronDown size={16} aria-hidden="true" /></summary><p>{copy.quickStartBody}</p><button className="btn-outline" onClick={dismiss}>{copy.dismiss}</button></details>
   </aside>;
 }

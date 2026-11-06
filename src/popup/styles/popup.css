@@ -496,7 +496,7 @@ html[data-surface="toolbar-popup"], html[data-surface="toolbar-popup"] body { wi
 .section-card { padding: 16px 0; gap: 10px; }
 .section-title { color: var(--text-primary); font-size: 14px; font-weight: 400; }
 .section-title svg { display: none; }
-.popup-body > .section-card:first-child { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; }
+.popup-controls > .section-card:first-child { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; }
 .preference-select { font: inherit; min-height: 36px; border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 10px; background: var(--bg-surface); color: var(--text-primary); }
 .toggle-label, .settings-label { font-weight: 400; }
 .quick-start { padding: 0 16px; }
@@ -506,3 +506,60 @@ html[data-surface="toolbar-popup"], html[data-surface="toolbar-popup"] body { wi
 .popup-footer { background: var(--bg-base); }
 .primary-btn { min-height: 36px; }
 @media (pointer: coarse) { .popup-header .icon-button, .tab-btn, .preference-select, .primary-btn { min-height: 44px; } }
+
+.feature-tour-link { display:flex; align-items:center; gap:10px; min-height:44px; padding:10px 12px; border:1px solid var(--border-color); border-radius:12px; color:var(--text-primary); text-decoration:none; font-size:13px; }
+.feature-tour-link span { flex:1; }
+.feature-tour-link:hover { background:var(--bg-surface-hover); }
+.feature-tour-link:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+
+.popup-about > .about-intro:first-child { display:flex; flex-direction:column; }
+
+/* Keep the compact toolbar aligned and use Claude's warm charcoal surfaces. */
+:root:not([data-theme='light']) { --bg-base:#262624; --bg-surface:#30302e; --bg-surface-hover:#3a3a37; --border-color:#ffffff1f; --text-primary:#faf9f5; --text-secondary:#c2c0b6; --text-muted:#aaa89f; }
+.popup-header { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; column-gap:12px; padding:12px 16px; }
+.popup-header .brand-wrapper { gap:8px; }
+.popup-header .brand-icon { flex:0 0 24px; height:32px; }
+.popup-header .brand-icon svg { display:block; }
+.popup-header .brand-info { min-width:0; }
+.popup-header .brand-info h1 { font-size:13px; line-height:1.35; }
+.popup-header .brand-info span { display:block; font-size:10px; line-height:1.4; font-weight:400; }
+.popup-header .header-actions { align-items:center; gap:4px; }
+.popup-header .theme-selector { height:32px; }
+.popup-header .theme-selector .theme-choice { height:26px; width:28px; }
+.popup-header .icon-button { width:32px; height:32px; min-width:32px; min-height:32px; flex:none; }
+.popup-about > .about-intro:first-child { display:flex; align-items:stretch; padding:20px 0; gap:14px; }
+.about-brand { display:flex; align-items:center; gap:12px; }
+.about-brand > svg { flex:none; }
+.about-brand-copy { min-width:0; }
+.about-brand h2 { font-size:17px; font-weight:500; line-height:1.35; }
+.about-version { color:var(--text-muted); font-size:12px; line-height:1.5; margin-top:4px; }
+.about-description { color:var(--text-secondary); font-size:13px; line-height:1.65; }
+@media(pointer:coarse) {
+ .popup-header { grid-template-columns:1fr; row-gap:8px; }
+ .popup-header .header-actions { justify-content:space-between; }
+ .popup-header .theme-selector { height:50px; }
+ .popup-header .theme-selector .theme-choice { width:44px; height:44px; }
+ .popup-header .icon-button { width:44px; height:44px; }
+}
+
+/* Centered About introduction; keep the tour action clear of the divider. */
+.popup-about > .about-intro:first-child { padding:24px 14px 28px; gap:18px; text-align:center; }
+.about-brand { flex-direction:column; gap:14px; }
+.about-brand > svg { width:36px; height:36px; }
+.about-brand h2 { font-size:19px; font-weight:400; }
+.about-version { margin-top:14px; }
+.about-description { font-size:14px; line-height:1.55; }
+.feature-tour-link { margin-block:12px 8px; }
+.popup-about .quick-start { padding:0; margin-bottom:16px; }
+.popup-about .quick-start details { border:1px solid var(--border-color); border-radius:12px; padding:0; overflow:hidden; }
+.popup-about .quick-start summary { display:flex; align-items:center; justify-content:space-between; gap:12px; list-style:none; min-height:44px; padding:10px 12px; color:var(--text-primary); }
+.popup-about .quick-start summary::-webkit-details-marker { display:none; }
+.popup-about .quick-start summary:hover { background:var(--bg-surface-hover); }
+.popup-about .quick-start summary svg { flex:none; transition:transform .15s; }
+.popup-about .quick-start details[open] summary svg { transform:rotate(180deg); }
+.popup-about .quick-start details[open] summary { border-bottom:1px solid var(--border-color); }
+.popup-about .quick-start p { padding:12px; }
+.popup-about .quick-start .btn-outline { margin:0 12px 12px; }
+.command-shortcuts .settings-section-header { align-items:flex-start; }
+.command-shortcuts .shortcut-row { width:100%; }
+@media(prefers-reduced-motion:reduce) { .popup-about .quick-start summary svg { transition:none; } }

@@ -36,7 +36,7 @@ export const QuickControls: React.FC<QuickControlsProps> = ({
   };
 
   return (
-    <div className="popup-body">
+    <div className="popup-body popup-controls">
       {/* Speed Presets */}
       <div className="section-card">
         <div className="section-title">

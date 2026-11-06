@@ -41,4 +41,25 @@ test('settings and popup render with Claude branding and no unavailable review l
   await page.getByRole('radio', { name: 'Light', exact: true }).check();
   await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(250, 249, 245)');
   await page.screenshot({ path: 'assets/demo/popup-light.png', animations: 'disabled' });
+  await expect(page.getByRole('link', {name:'Feature tour',exact:true})).toHaveCount(0);
+  await page.getByRole('button', {name:'About',exact:true}).click();
+  const tour = page.getByRole('link', {name:'Feature tour',exact:true});
+  await expect(tour).toBeVisible();
+  await expect(tour).toHaveAttribute('href','../tour/index.html');
+  await expect(tour).toHaveCSS('border-radius','12px');
+  await page.screenshot({path:'build/popup-about-tour.png',animations:'disabled'});
+  await page.getByRole('radio', {name:'Dark',exact:true}).check();
+  await expect(page.locator('body')).toHaveCSS('background-color','rgb(38, 38, 36)');
+  expect(await page.locator('.about-brand').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
+  await page.screenshot({path:'build/popup-about-dark.png',animations:'disabled'});
+  await page.locator('.quick-start summary').click();
+  await expect(page.locator('.quick-start details')).toHaveAttribute('open','');
+  await page.evaluate(()=>{window.chrome={commands:{getAll:async()=>[]}};});
+  await page.getByRole('button',{name:'Keys',exact:true}).click();
+  const rows = await page.locator('.command-shortcuts .shortcut-row').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,width:r.width};}));
+  expect(rows.length).toBeGreaterThan(10);
+  for(let i=1;i<rows.length;i++) expect(rows[i].top).toBeGreaterThanOrEqual(rows[i-1].bottom);
+  expect(Math.min(...rows.map(r=>r.width))).toBeGreaterThan(280);
+  await page.screenshot({path:'build/popup-keys-fixed.png',animations:'disabled'});
 });
+

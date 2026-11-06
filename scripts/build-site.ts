@@ -38,6 +38,8 @@ import {
   PanelsTopLeft,
   CircleCheck,
   ArrowRight,
+  ArrowLeft,
+  ChevronDown,
   ExternalLink,
   X,
   type LucideIcon,
@@ -102,8 +104,8 @@ const escape = (value: string) =>
       ]!,
   );
 const localeUrl = (code: string) => root + (code === "en" ? "" : code + "/");
-const chromeUrl = config.chromeListingLive && config.chromeItemId ? `https://chromewebstore.google.com/detail/${config.chromeItemId}/` : '';
-const edgeUrl = config.edgeListingLive && config.edgeItemId ? `https://microsoftedge.microsoft.com/addons/detail/${config.edgeItemId}` : '';
+const chromeUrl = config.chromeItemId ? `https://chromewebstore.google.com/detail/${config.chromeItemId}/` : '';
+const edgeUrl = config.edgeItemId ? `https://microsoftedge.microsoft.com/addons/detail/${config.edgeItemId}` : '';
 const availableStores = (['chrome', 'edge'] as const).filter(store => store === 'chrome' ? chromeUrl : edgeUrl);
 const chromeReviewUrl = REVIEW_URLS.chrome;
 const edgeReviewUrl = REVIEW_URLS.edge;
@@ -480,10 +482,10 @@ for (const [code, base] of Object.entries(LOCALES)) {
   if (!labels) throw Error("Missing stats labels: " + code);
   const layoutSlides = ['composer', ...PRESETS.filter(preset => preset !== 'composer')].flatMap(preset => ['seek', 'controls'].map(order => ({file: `${preset}-${order}.png`, title: `${f.presets[preset as keyof typeof f.presets]}${order === 'controls' ? ` · ${f.swap}` : ''}`, mobile: false})));
   layoutSlides.push({file: 'mobile.png', title: `${f.narrow} · ${f.presets.composer}`, mobile: true});
-  const homeContent = `<main id="main"><section class="hero"><div class="eyebrow"><span class="eyebrow-brand">${playIcon} Claude Audio Controls</span></div><h1>${escape(c.siteTitle)}</h1><p class="intro">${escape(c.siteIntro)}</p><p class="small">${escape(c.quickStartBody)}</p>${install("hero")}<p><a class="ui-button" href="${url}installation/#source">${escape(g.installation)}</a></p><p class="small">Development preview · 0.1.0 · Store release pending</p><p class="small">${escape(c.desktop)}</p></section>
+  const homeContent = `<main id="main"><section class="hero"><div class="eyebrow"><span class="eyebrow-brand"><img src="${path}assets/icon.png" width="20" height="20" alt=""> Claude Audio Controls</span></div><h1>${escape(c.siteTitle)}</h1><p class="intro">${escape(c.siteIntro)}</p><p class="small">${escape(c.quickStartBody)}</p>${install("hero")}<p class="small">${escape(c.desktop)}<br>${escape(c.available)}</p></section>
   <section class="section demo-section" id="demo" aria-labelledby="demo-title"><h2 id="demo-title">${escape(demo[0])}</h2>
   <div class="demo-gallery"><figure><a href="${path}assets/native-player.jpg"><img src="${path}assets/native-player.jpg" alt="${escape(c.screenshot)}" width="2360" height="1070" loading="lazy"></a><figcaption>${escape(base.content.shortcutsPopover.playPause)} · ${escape(base.content.tooltips.speed)} · ${escape(base.content.tooltips.download)}</figcaption></figure><figure><a href="${path}assets/native-controls.jpg"><img src="${path}assets/native-controls.jpg" alt="${escape(base.content.tooltips.volume)}" width="978" height="381" loading="lazy"></a><figcaption>${escape(base.content.tooltips.volume)} · ${escape(base.content.tooltips.download)}</figcaption></figure></div></section>
-  <section class="section" id="layouts" aria-labelledby="layouts-title"><h2 id="layouts-title">${escape(f.layout)}</h2><div class="layout-carousel" role="region" aria-labelledby="layouts-title" tabindex="0"><div class="layout-carousel-slides">${layoutSlides.map(slide => `<figure><a href="${path}assets/layouts/${slide.file}"><img src="${path}assets/layouts/${slide.file}" alt="${escape(slide.title)}" width="${slide.mobile ? 390 : 1600}" height="${slide.mobile ? 844 : 900}" loading="lazy"></a><figcaption>${escape(slide.title)}</figcaption></figure>`).join('')}</div><div class="layout-carousel-controls" hidden><button type="button" class="ui-button" data-layout-previous aria-controls="layout-picker"><span aria-hidden="true">←</span></button><select id="layout-picker" aria-label="${escape(f.layout)}">${layoutSlides.map((slide, index) => `<option value="${index}">${index + 1} / ${layoutSlides.length} · ${escape(slide.title)}</option>`).join('')}</select><button type="button" class="ui-button" data-layout-next aria-controls="layout-picker"><span aria-hidden="true">→</span></button></div><p class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p></div></section>
+  <section class="section" id="layouts" aria-labelledby="layouts-title"><h2 id="layouts-title">${escape(f.layout)}</h2><div class="layout-carousel" role="region" aria-labelledby="layouts-title" tabindex="0"><div class="layout-carousel-slides">${layoutSlides.map(slide => `<figure><a href="${path}assets/layouts/${slide.file}"><img src="${path}assets/layouts/${slide.file}" alt="${escape(slide.title)}" width="${slide.mobile ? 390 : 1600}" height="${slide.mobile ? 844 : 900}" loading="lazy"></a><figcaption>${escape(slide.title)}</figcaption></figure>`).join('')}</div><div class="layout-carousel-controls" hidden><button type="button" class="ui-button" data-layout-previous aria-controls="layout-picker">${icon(ArrowLeft)}</button><span class="layout-picker-wrap"><select id="layout-picker" aria-label="${escape(f.layout)}">${layoutSlides.map((slide, index) => `<option value="${index}">${index + 1} / ${layoutSlides.length} · ${escape(slide.title)}</option>`).join('')}</select>${icon(ChevronDown, 'layout-picker-chevron')}</span><button type="button" class="ui-button" data-layout-next aria-controls="layout-picker">${icon(ArrowRight)}</button></div><p class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p></div></section>
   <section class="section feature-section" id="features"><h2>${escape(c.features)}</h2><div class="features">${features.map(([title, body], index) => `<article><span class="feature-icon">${featureIcons[index % featureIcons.length]}</span><div><h3>${escape(title)}</h3><p>${escape(body)}</p>${index === 1 ? `<div class="speed-presets" aria-label="${escape(base.content.tooltips.speed)}">${SPEED_PRESETS.map((speed) => `<span>${speed}×</span>`).join("")}</div>` : ""}</div></article>`).join("")}</div></section>
   <section class="section setup-section" id="setup"><div><h2>${escape(c.setup)}</h2><ol><li>${escape(c.stepInstall)}${install("setup")}</li><li>${escape(c.stepRead)}<p class="step-action">${linkButton("https://claude.ai/", base.common.openClaude, true)}</p></li><li>${escape(c.stepControl)}</li></ol></div><div class="shortcuts-panel"><h3>${escape(base.popup.shortcuts.title)}</h3><table><thead><tr><th scope="col">${escape(base.popup.tabs.controls)}</th><th scope="col">Windows / Linux</th><th scope="col">macOS</th></tr></thead><tbody>${shortcutRows.map(([label, windows, mac]) => `<tr><td>${escape(label)}</td><td><kbd>${escape(windows)}</kbd></td><td><kbd>${escape(mac)}</kbd></td></tr>`).join("")}</tbody></table></div></section>
   <section class="section settings-story" id="dashboard"><div><h2>${escape(base.common.dashboard)}</h2><p>${escape(base.options.headers.preferencesDesc)}</p><h3>${escape(base.options.general.languageTitle)}</h3><p>${escape(base.options.general.languageDesc)}</p><h3>${escape(base.options.general.seekTitle)}</h3><p>${escape(base.options.general.seekDesc)}</p><h3>${escape(base.options.nav.darkMode)} / ${escape(base.options.nav.lightMode)}</h3></div><figure><img src="${path}assets/popup.png" alt="${escape(base.options.headers.preferencesTitle)}" width="1920" height="1080" loading="lazy"><figcaption class="small">${escape(base.options.headers.preferencesTitle)}</figcaption></figure></section>
@@ -686,3 +688,31 @@ writeFileSync(
       .join("\n\n") +
     "\n",
 );
+
+writeFileSync("site-dist/agents.md", `# Claude Audio Controls
+
+## Overview
+Independent playback controls for Claude native Read aloud. This is not an Anthropic product.
+
+## Setup
+See [installation](${root}installation/) and [userscript setup](${root}userscript/).
+Start Read aloud on a completed Claude reply, then use the player. No API key is required.
+
+## Usage
+Pause, seek within received audio, change speed and volume, or download completed audio.
+See the [user guide](${root}guide/) and [documentation map](${root}sitemap.md).
+
+## Limitations
+Live voice conversations are not supported. Store availability and platform acceptance must be verified separately from repository versions.
+
+## Privacy and safety
+Audio is processed locally. Do not send private conversations or audio in feedback.
+The extension has no telemetry; website analytics require consent.
+
+## Development
+Source: https://github.com/infoxica/claude-audio-controls
+Use Bun, run bun install --frozen-lockfile, bun run build, and bun run test.
+Do not claim release acceptance until the repository's release checks pass.
+`);
+
+

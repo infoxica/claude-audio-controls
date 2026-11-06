@@ -65,3 +65,20 @@ This file records evidence, not a production approval. `config/acceptance.json` 
 - New Chrome/Edge listing identifiers and final store assets. No inherited install counts or ratings.
 
 Automated fixtures are not evidence of physical macOS/Android acceptance. Do not change a gate to true without recording the corresponding browser/device and evidence here.
+
+
+## 2026-11-06 branding and first-install tour
+
+- Checkpoint before this work: `b834925` (local commit).
+- Replaced project marks with owner-supplied SVG/PNG; rebuilt extension and store artwork.
+- Website links now point to the assigned Chrome and Edge IDs at the owner's request. Listing-live flags remain false; publication and review actions remain gated.
+- Website uses a Styrene/Tiempos-inspired system sans/serif pairing without distributing commercial fonts.
+- Extension-only welcome tab opens on `onInstalled` reason `install`, never updates. Five English-language steps support Back, Next, arrow keys, Escape/Skip, local completion state, and replay from Quick Start in settings/popup. English tour copy is explicitly marked `lang=en`; tour localization is pending.
+- Seven focused browser checks passed: help alignment, settings/popup, tour navigation/completion, skip persistence, install-vs-update and userscript exclusion, website consent/store links, responsive localized website. Tour verified at 320 px, with light/dark screenshots.
+- TypeScript/build, version consistency and ZIP packaging passed. These checks do not replace pending real Claude/device audio acceptance.
+
+## 2026-11-06 settings bridge invalidation
+
+- Guarded stale bridges after an extension reload/update and caught synchronous Chrome API failures in theme, settings-page and engagement calls.
+- Regression test passes against the rebuilt bridge (8 assertions) and fails with `Extension context invalidated.` against the owner-supplied previous bundle. The original browser error was cleared before its message could be inspected, so its exact cause remains unconfirmed.
+- Extension build and 0.1.0 ZIP packaging passed. Refresh already-open Claude tabs after reloading the extension.

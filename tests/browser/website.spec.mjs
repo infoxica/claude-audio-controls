@@ -29,10 +29,11 @@ async function website(page, staging = false) {
   return requests;
 }
 
-test('website requires consent, supports withdrawal, and hides unavailable stores', async ({page}) => {
+test('website requires consent, supports withdrawal, and links to the assigned stores', async ({page}) => {
   const requests = await website(page);
   expect(requests).toHaveLength(0);
-  expect(await page.locator('[data-store]').count()).toBe(0);
+  await expect(page.locator('.hero [data-store=chrome]')).toHaveAttribute('href', /chromewebstore\.google\.com\/detail\/phpfodemdjccejlpchbeeehjdgaldldi/);
+  await expect(page.locator('.hero [data-store=edge]')).toHaveAttribute('href', /microsoftedge\.microsoft\.com\/addons\/detail\/gabdlfkfofnclhnpcmdfikijmmckpcee/);
   await page.locator('#analytics-decline').click();
   await expect(page.locator('#consent')).toBeHidden();
   expect(requests).toHaveLength(0);
