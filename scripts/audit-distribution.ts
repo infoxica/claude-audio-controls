@@ -9,7 +9,7 @@ const root = resolve('.');
 const candidates = [...new Set(execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], {encoding:'utf8'}).split('\0').filter(Boolean))].sort();
 const allowedRoots = new Set(['.github', 'assets', 'config', 'docs', 'feedback', 'public', 'scripts', 'site', 'src', 'tests', 'userscript']);
 const allowedRootFiles = new Set(['.gitattributes','.gitignore','LICENSE','README.md','CHANGELOG.md','CONTRIBUTING.md','PRIVACY.md','THIRD_PARTY_NOTICES.md','bun.lock','package.json','playwright.config.mjs','tsconfig.json','vite.config.ts']);
-const binary = new Set(['.png']);
+const binary = new Set(['.png', '.jpg', '.jpeg']);
 const findings: string[] = [];
 const inventory: {path:string; bytes:number; sha256:string}[] = [];
 const forbiddenText = [
@@ -24,8 +24,13 @@ for (const path of candidates) {
   if (/(^|\/)(?:\.env(?:\.|$)|\.dev\.vars|(?:node_modules|\.wrangler|build|dist|site-dist|\.git)(?:\/|$))/.test(path) || /\.(webm|wav|pcm|opus|log|zip)$/i.test(path)) findings.push(`${path}: private or generated artifact`);
   const bytes = readFileSync(resolve(root,path));
   inventory.push({path,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')});
-  if (binary.has(extname(path))) {
-    if (!bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))) findings.push(`${path}: invalid PNG`);
+  const extension = extname(path).toLowerCase();
+  if (binary.has(extension)) {
+    if (extension === '.png') {
+      if (!bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))) findings.push(`${path}: invalid PNG`);
+    } else if (!bytes.subarray(0,3).equals(Buffer.from([255,216,255])) || !bytes.subarray(-2).equals(Buffer.from([255,217]))) {
+      findings.push(`${path}: invalid JPEG`);
+    }
     continue;
   }
   if (bytes.includes(0)) findings.push(`${path}: unexpected binary`);
@@ -45,8 +50,8 @@ for (const file of walk(resolve('dist'))) {
   if (/\.(map|ts|tsx)$/.test(path) || /(?:\.env|\.dev\.vars|test-results)/.test(path)) findings.push(`dist/${path}: unexpected package content`);
 }
 // Check ZIP CRCs and compare every archived byte to dist, including the root manifest.
-const zip = readdirSync('dist-zip').filter(file=>file.endsWith('.zip'));
-if (zip.length !== 1) findings.push('distribution: expected one versioned ZIP');
+const zip = resolve('dist-zip', `claude-audio-controls-v${manifest.version}.zip`);
+if (!existsSync(zip)) findings.push('distribution: current version ZIP is missing');
 else execFileSync('python', ['-B','-c', `import zipfile,pathlib,sys
 root=pathlib.Path('dist')
 with zipfile.ZipFile(sys.argv[1]) as z:
@@ -55,7 +60,7 @@ with zipfile.ZipFile(sys.argv[1]) as z:
  entries={n.replace('\\\\','/'):z.read(n) for n in z.namelist() if not n.endswith('/')}
  assert files==entries, 'ZIP differs from dist'
  assert 'manifest.json' in entries
-`, resolve('dist-zip',zip[0])], {stdio:'inherit'});
+`, zip], {stdio:'inherit'});
 mkdirSync('build', {recursive:true});
 writeFileSync('build/publication-audit.json', JSON.stringify({createdAt:new Date().toISOString(), files:inventory, findings},null,2)+'\n');
 if (findings.length) throw new Error(findings.join('\n'));
