@@ -1,0 +1,107 @@
+name: Publish to browser stores (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_to_stores:
+        description: Submit to store review (may publish after approval)
+        type: boolean
+        default: false
+        required: true
+      store:
+        description: Store to submit or retry
+        type: choice
+        options: [both, chrome, edge]
+        default: both
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: manual-store-publishing
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require main
+        run: test "$GITHUB_REF" = refs/heads/main
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.3
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - run: bun run test
+      - run: bun run typecheck:feedback
+      - run: bun run build:site
+      - run: bunx playwright install --with-deps chromium
+      - run: bun run test:browser && bun run test:site-http
+      - run: bun run package && bun scripts/audit-distribution.ts
+      - run: bun scripts/build-edge-listings.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: edge-store-listings
+          path: build/edge-store-listings/
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: store-package
+          path: dist-zip/claude-audio-controls-v*.zip
+          if-no-files-found: error
+      - name: Require production acceptance before any submission
+        if: inputs.publish_to_stores
+        run: bun run release:check
+      - name: Require existing Edge publication for update API
+        if: inputs.publish_to_stores && (inputs.store == 'both' || inputs.store == 'edge')
+        run: |
+          jq -e '.edgeListingLive == true' config/release.json || {
+            echo 'First Edge publication must be completed in Partner Center.' >&2
+            exit 1
+          }
+
+  chrome:
+    needs: verify
+    if: inputs.publish_to_stores && (inputs.store == 'both' || inputs.store == 'chrome')
+    runs-on: ubuntu-latest
+    environment: store-publishing
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: store-package
+          path: release-assets
+      - name: Submit Chrome package
+        env:
+          PUBLISH_TO_STORES: 'true'
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
+        run: |
+          export CHROME_EXTENSION_ID="$(jq -er '.chromeItemId' config/release.json)"
+          bash scripts/publish-chrome.sh
+
+  edge:
+    needs: verify
+    if: inputs.publish_to_stores && (inputs.store == 'both' || inputs.store == 'edge')
+    runs-on: ubuntu-latest
+    environment: store-publishing
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: store-package
+          path: release-assets
+      - name: Submit Edge update
+        env:
+          PUBLISH_TO_STORES: 'true'
+          EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+          EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+        run: |
+          export EDGE_PRODUCT_ID="$(jq -er '.edgeProductId' config/release.json)"
+          bash scripts/publish-edge.sh
