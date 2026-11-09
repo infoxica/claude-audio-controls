@@ -4,7 +4,7 @@ set -euo pipefail
 [[ "${PUBLISH_TO_STORES:-false}" == "true" ]] || { echo 'Publishing is disabled.' >&2; exit 1; }
 [[ "${GITHUB_REF:-}" == "refs/heads/main" ]] || { echo 'Publishing requires main.' >&2; exit 1; }
 version="$(jq -er '.version' package.json)"
-zip_path="release-assets/claude-audio-controls-v${version}.zip"
+zip_path="release-assets/dist-zip/claude-audio-controls-v${version}.zip"
 [[ -f "$zip_path" ]] || { echo 'Exact versioned release ZIP is missing.' >&2; exit 1; }
 
 : "${EDGE_API_KEY:?Missing EDGE_API_KEY secret}"
@@ -47,7 +47,7 @@ poll_operation() {
 The package processing step and the listing validation step are separate. Edge rejected the LISTING module.
 Download this run's **edge-store-listings** artifact, then complete the description and logo for every included language in Partner Center and save each draft.
 The [Edge Update REST API does not support metadata updates](https://learn.microsoft.com/en-us/microsoft-edge/extensions/update/api/using-addons-api#using-the-api-endpoints).
-After saving valid listings, retry the workflow on **main** with **publish_to_stores=true** and **store=edge**. Do not rerun Chrome for this failure.
+After saving valid listings, retry the workflow on **main** with **publish_to_stores=yes** and **store=edge**. Do not rerun Chrome for this failure.
 SUMMARY
           fi
         fi

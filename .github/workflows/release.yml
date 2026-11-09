@@ -1,22 +1,200 @@
-name: Prepare approved release
-on: workflow_dispatch
+name: CI & Release
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+    inputs:
+      publish_to_stores:
+        description: "Publish this version to the Chrome Web Store and Microsoft Edge Add-ons?"
+        required: true
+        default: "no"
+        type: choice
+        options:
+          - "no"
+          - "yes"
+      store:
+        description: "Store to retry"
+        type: choice
+        default: both
+        options: [both, chrome, edge]
+
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: extension-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  release:
+  verify:
+    name: Verify and package extension
     runs-on: ubuntu-latest
-    environment: production
+    outputs:
+      publish: ${{ steps.policy.outputs.publish }}
+      version: ${{ steps.policy.outputs.version }}
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.3
-      - run: bun install --frozen-lockfile
-      - run: bun run package && bun run release:check && bun run test
-      - run: bun scripts/audit-distribution.ts
-      - name: Create draft for final store review
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Check source and README versions
+        run: bun run version:check
+
+      - name: Build feedback translations
+        run: bun scripts/build-feedback-copy.ts
+
+      - name: Typecheck feedback
+        run: bun run typecheck:feedback
+
+      - name: Release policy
+        id: policy
+        run: bun scripts/release-policy.mjs
         env:
-          GH_TOKEN: ${{ github.token }}
+          BEFORE_SHA: ${{ github.event.before }}
+          MANUAL_PUBLISH: ${{ inputs.publish_to_stores }}
+
+      - name: Generate icons
+        run: bun run build:icons
+
+      - name: Validate release metadata
+        if: startsWith(github.ref, 'refs/tags/v') || steps.policy.outputs.publish == 'true'
+        run: bun run release:check
+        env:
+          RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('v{0}', steps.policy.outputs.version) }}
+
+      - name: Build extension and userscript
+        run: bun run build
+
+      - name: Tests (including delivered userscript parity)
+        run: bun run test
+
+      - name: Build website and feedback fixtures
         run: |
-          VERSION=$(bun -p "require('./package.json').version")
-          gh release create "v$VERSION" --draft --title "Claude Audio Controls $VERSION" --notes-file CHANGELOG.md dist-zip/*.zip userscript/*.user.js
+          bun run scripts/build-site.ts
+          bun run build:feedback
+
+      - name: Prepare Edge store listing inputs
+        run: bun run scripts/build-edge-listings.ts
+
+      - name: Upload Edge store listing inputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: edge-store-listings-${{ github.run_id }}
+          path: build/edge-store-listings/
+          if-no-files-found: error
+
+      - name: Install test browser
+        run: bunx playwright install --with-deps chromium
+
+      - name: Browser integration checks
+        run: bunx playwright test
+
+      - name: Package extension ZIP
+        run: bun run scripts/package-zip.ts
+
+      - name: Validate archive
+        run: bun scripts/audit-distribution.ts
+
+      - name: Upload release assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-release-${{ github.run_id }}
+          if-no-files-found: error
+          path: |
+            dist-zip/*.zip
+            userscript/claude-audio-controls.user.js
+
+  release:
+    name: Publish GitHub release
+    needs: verify
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.verify.outputs.publish == 'true')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download release assets
+        uses: actions/download-artifact@v4
+        with:
+          name: extension-release-${{ github.run_id }}
+          path: release-assets
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('v{0}', needs.verify.outputs.version) }}
+          target_commitish: ${{ github.sha }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            release-assets/dist-zip/*.zip
+            release-assets/userscript/claude-audio-controls.user.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-chrome:
+    name: Publish chrome store update
+    needs: verify
+    if: needs.verify.outputs.publish == 'true' && (github.event_name != 'workflow_dispatch' || inputs.store == 'both' || inputs.store == 'chrome')
+    runs-on: ubuntu-latest
+    environment: store-publishing
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: extension-release-${{ github.run_id }}
+          path: release-assets
+      - name: Submit to chrome
+        env:
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
+          PUBLISH_TO_STORES: 'true'
+        run: |
+          export CHROME_EXTENSION_ID="$(jq -er '.chromeItemId' config/release.json)"
+          bash scripts/publish-chrome.sh
+
+  publish-edge:
+    name: Publish edge store update
+    needs: verify
+    if: needs.verify.outputs.publish == 'true' && (github.event_name != 'workflow_dispatch' || inputs.store == 'both' || inputs.store == 'edge')
+    runs-on: ubuntu-latest
+    environment: store-publishing
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: extension-release-${{ github.run_id }}
+          path: release-assets
+      - name: Submit to edge
+        env:
+          PUBLISH_TO_STORES: 'true'
+          EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+          EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+          EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+        run: bash scripts/publish-edge.sh

@@ -4,7 +4,7 @@ set -euo pipefail
 [[ "${PUBLISH_TO_STORES:-false}" == "true" ]] || { echo 'Publishing is disabled.' >&2; exit 1; }
 [[ "${GITHUB_REF:-}" == "refs/heads/main" ]] || { echo 'Publishing requires main.' >&2; exit 1; }
 version="$(jq -er '.version' package.json)"
-zip_path="release-assets/claude-audio-controls-v${version}.zip"
+zip_path="release-assets/dist-zip/claude-audio-controls-v${version}.zip"
 [[ -f "$zip_path" ]] || { echo 'Exact versioned release ZIP is missing.' >&2; exit 1; }
 
 : "${CHROME_CLIENT_ID:?Missing CHROME_CLIENT_ID secret}"
