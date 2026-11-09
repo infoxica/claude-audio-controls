@@ -27,7 +27,7 @@ await expect(page.locator('.claude-ra-download')).toBeEnabled();
 await page.locator('.claude-ra-play').click();
 await page.locator('.claude-ra-seek-slider').fill('12');
 mkdirSync(output,{recursive:true});
-for(const preset of store ? ['composer','bottom-right','left'] : ['composer','original','bottom-left','bottom-right','top-left','top-right','left','right']) {
+for(const preset of store ? ['composer','bottom-right','left'] : ['composer','original','original-bottom','bottom-left','bottom-right','top-left','top-right','left','right']) {
   for(const seekFirst of store ? [true] : [true,false]) {
     await page.evaluate(({preset,seekFirst})=>window.postMessage({source:'claude-audio-controls-settings-bridge',type:'CLAUDE_RA_LAYOUT_UPDATE',layout:{version:2,desktop:{preset,seekFirst},narrow:{preset:'composer',seekFirst}}},location.origin),{preset,seekFirst});
     await expect(page.locator('#claude-ra-floating-toggle')).toHaveAttribute('data-preset',preset);

@@ -42,11 +42,11 @@ test('compact vertical and corner controls preserve a constrained preset', () =>
   }
 });
 
-test('all 14 desktop presets have correct non-overlapping geometry', () => {
+test('all desktop presets have correct non-overlapping geometry', () => {
   const viewport = { x: 12, y: 80, width: 1400, height: 850 };
   const composer = { x: 400, y: 800, width: 760, height: 80 };
   let count = 0;
-  for (const preset of PRESETS) for (const seekFirst of preset === 'original' || preset === 'composer' ? [true] : [true, false]) {
+  for (const preset of PRESETS) for (const seekFirst of preset.startsWith('original') || preset === 'composer' ? [true] : [true, false]) {
     count++;
     const g = dockGeometry({ preset, seekFirst }, viewport, true, composer)!;
     expect(g).not.toBeNull();
@@ -67,7 +67,7 @@ test('all 14 desktop presets have correct non-overlapping geometry', () => {
       expect(g.circle.y).toBeGreaterThan((seekFirst ? g.seek : g.controls).y);
     }
   }
-  expect(count).toBe(14);
+  expect(count).toBe(15);
 });
 test('mobile docks are flush, horizontal, reversible and direction-aware', () => {
   for (const width of [320, 360, 390, 768]) for (const seekFirst of [true, false]) for (const rtl of [true, false]) {
@@ -154,5 +154,37 @@ test('top L presets clear native actions and dock tabs clear composer curves', (
     expect(g.circleVisual!.y+g.circleVisual!.height).toBe(c.y);
     expect(rtl ? g.circleVisual!.x-c.x : c.x+c.width-g.circleVisual!.x-g.circleVisual!.width).toBe((rtl?28:32)+6);
     expect(g.circle.height).toBe(44);
+  }
+});
+
+
+test('fresh installs and reset use composer docking; saved split choices survive', () => {
+  expect(PRESETS[0]).toBe('composer');
+  expect(defaultLayout().desktop.preset).toBe('composer');
+  expect(migrateLayout(null)).toEqual(defaultLayout());
+  for (const preset of ['original', 'original-bottom'] as const) {
+    const saved = { ...defaultLayout(), desktop: { preset, seekFirst: false } };
+    expect(migrateLayout(saved)).toEqual(saved);
+  }
+});
+
+test('split top and bottom follow a growing composer in both rail orders and directions', () => {
+  const viewport = { x: 12, y: 12, width: 1896, height: 876 };
+  for (const height of [80, 300, 650]) for (const seekFirst of [true, false]) for (const rtl of [true, false]) {
+    const composer = { x: 570, y: 860 - height, width: 760, height };
+    for (const preset of ['original', 'original-bottom'] as const) {
+      const layout = { preset, seekFirst };
+      const g = dockGeometry(layout, viewport, true, composer, rtl)!;
+      expect(g).not.toBeNull();
+      const y = preset === 'original' ? composer.y : 814;
+      expect(g.seek.y).toBe(y);
+      expect(g.controls.y).toBe(y);
+      expect(g.circle.y).toBe(y + 1);
+      expect(dockGeometry(layout, viewport, false, composer, rtl)!.circle).toEqual(g.circle);
+      for (const part of [g.seek, g.controls, g.circle]) {
+        expect(fits(part, viewport)).toBe(true);
+        expect(intersects(part, composer)).toBe(false);
+      }
+    }
   }
 });

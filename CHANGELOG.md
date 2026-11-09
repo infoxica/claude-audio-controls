@@ -2,6 +2,8 @@
 
 ## 1.0.0 — release candidate (unreleased)
 
+- Added Split · Bottom placement alongside Split · Top for tall composers; composer dock remains the fresh-install default and appears first in layout settings.
+
 - Claude-native playback controls, layouts, downloads, and 67 interface languages.
 - Owner-supplied branding, updated popup/settings, and optional first-install tour.
 - Localized companion website, Markdown discovery, and public agent documentation.

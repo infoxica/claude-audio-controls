@@ -274,3 +274,23 @@ test('drag targets and handles use the same rounded rectangles as the player', a
   await page.keyboard.press('Escape'); await page.mouse.up();
   await expect(page.locator('#claude-ra-drop-targets')).toHaveCount(0);
 });
+
+
+for (const standalone of [false, true]) test(`${standalone ? 'userscript' : 'extension'} split alignment follows tall composer`, async ({ page }) => {
+  await page.setViewportSize({width:1920,height:900});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await setup(page, standalone);
+  await expect(page.locator('#claude-ra-floating-toggle')).toHaveAttribute('data-preset','composer');
+  for (const preset of ['original', 'original-bottom']) for (const seekFirst of [true,false]) {
+    await page.evaluate(({preset,seekFirst})=>window.postMessage({source:'claude-audio-controls-settings-bridge',type:'CLAUDE_RA_LAYOUT_UPDATE',layout:{version:2,desktop:{preset,seekFirst},narrow:{preset:'composer',seekFirst:true}}},location.origin),{preset,seekFirst});
+    for (const height of [180,600,100]) {
+      await page.locator('.composer').evaluate((el,height)=>el.style.height=height+'px',height);
+      await expect.poll(async()=>{
+        const composer=await page.locator('.composer').boundingBox();
+        const rails=await Promise.all(['#claude-ra-left','#claude-ra-right'].map(id=>page.locator(id).boundingBox()));
+        return rails.every(r=>r && Math.abs((preset==='original' ? r.y-composer.y : r.y+r.height-composer.y-composer.height))<2);
+      }).toBe(true);
+      if (height===600 && seekFirst && !standalone) await page.screenshot({path:`build/split-${preset}.png`,animations:'disabled'});
+    }
+  }
+});

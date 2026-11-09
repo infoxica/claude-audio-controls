@@ -1,5 +1,5 @@
 export const LAYOUT_KEY = 'claude-ra-layout-v1';
-export const PRESETS = ['original', 'bottom-left', 'bottom-right', 'top-left', 'top-right', 'left', 'right', 'composer'] as const;
+export const PRESETS = ['composer', 'original', 'original-bottom', 'bottom-left', 'bottom-right', 'top-left', 'top-right', 'left', 'right'] as const;
 export type LayoutPreset = typeof PRESETS[number];
 export type LayoutProfile = { preset: LayoutPreset; seekFirst: boolean };
 export type LayoutPreferences = { version: 2; desktop: LayoutProfile; narrow: LayoutProfile };

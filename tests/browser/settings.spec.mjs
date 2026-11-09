@@ -13,6 +13,8 @@ test('settings and popup render with Claude branding and no unavailable review l
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto('http://127.0.0.1:4173/src/options/index.html');
   await expect(page.getByRole('heading', { name: 'Audio & Playback Preferences' })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: 'Placement', exact: true })).toHaveValue('composer');
+  await expect(page.getByRole('option', { name: 'Split · Bottom', exact: true })).toHaveCount(1);
   expect(await page.locator('a[href=""]').count()).toBe(0);
   mkdirSync('assets/demo', { recursive: true });
   await expect(page.locator('#options-language button')).toHaveCount(68);

@@ -56,7 +56,7 @@ test('staging never loads analytics; localized navigation and responsive layouts
   mkdirSync('assets/demo', {recursive: true});
   await page.screenshot({path: 'assets/demo/website.png'});
   await expect(page.locator('#demo-note')).toHaveCount(0);
-  await expect(page.locator('#layouts figure')).toHaveCount(17);
+  await expect(page.locator('#layouts figure')).toHaveCount(19);
   await expect(page.locator('#layouts figure:visible')).toHaveCount(1);
   const carousel = page.locator('.layout-carousel');
   await carousel.focus();
@@ -71,10 +71,10 @@ test('staging never loads analytics; localized navigation and responsive layouts
   await page.keyboard.press('Escape');
   await expect(page.locator('#layouts figure:visible a')).toBeFocused();
   await page.keyboard.press('End');
-  await expect(page.locator('#layout-picker')).toHaveValue('16');
+  await expect(page.locator('#layout-picker')).toHaveValue('18');
   await page.keyboard.press('Home');
   await page.locator('[data-layout-previous]').click();
-  await expect(page.locator('#layout-picker')).toHaveValue('16');
+  await expect(page.locator('#layout-picker')).toHaveValue('18');
   await page.locator('[data-layout-next]').click();
   await expect(page.locator('#layout-picker')).toHaveValue('0');
   await page.locator('#layout-picker').selectOption('6');
